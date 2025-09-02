@@ -1,0 +1,8 @@
+archetype            = "base"
+boot_wait            = "25s"
+init_script          = "scripts/base.sh"
+iso_checksum         = "sha256:630387dd0d6cb3b242b0621fdb8b12f59021279fc449f55729087522201ac993"
+iso_url              = "https://channels.nixos.org/nixos-25.05/latest-nixos-minimal-x86_64-linux.iso"
+name                 = "nixos"
+version              = "25.05"
+INSTALL_LOCAL        = "false"

@@ -1,0 +1,15 @@
+{
+  "name": "nixos25.05_base",
+  "versions": [
+    {
+      "version": "0.0.5",
+      "providers": [
+        {
+          "name": "libvirt",
+          "url": "file:///home/user/releases/packer/base_boxes/nixos25.05/base/nixos25.05-base.box"
+        }
+      ]
+    }
+  ]
+}
+

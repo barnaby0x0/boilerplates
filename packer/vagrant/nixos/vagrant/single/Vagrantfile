@@ -1,0 +1,30 @@
+load "../configurations/variables.rb"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = $box_name
+  #config.vm.provision :nixos, run: :always  # <--- Ajoute "run: :always"
+  config.ssh.username = "vagrant"
+  #config.ssh.shell = "/run/current-system/sw/bin/bash -lc"
+  config.ssh.shell = "bash"
+
+  config.vm.box_version = $box_version
+  config.ssh.insert_key = false
+  config.vm.provider :libvirt do |libvirt|
+    #libvirt.storage_pool_name = settings["storage"]["pool_name"] # Don't forget to create the pool first via virsh
+    libvirt.memorybacking :access, :mode => "shared"
+  end
+  #config.vm.synced_folder "./", "/mnt/configurations", type: "nfs", nfs_version: 4
+  config.vm.allow_fstab_modification = false
+  config.vm.synced_folder "../shared", "/vagrant", type: "virtiofs", mount_options: ["uid=1000", "gid=1000"]
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.memory = 3072
+    libvirt.cpus = 4
+  end
+
+  config.vm.network :private_network, 
+    ip: "192.168.123.240",
+    network_name: "backbone",
+    dhcp: false,
+    mac: "52:54:00:00:00:01"
+
+end
