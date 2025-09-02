@@ -1,0 +1,40 @@
+load "../configurations/variables.rb"
+
+Vagrant.configure("2") do |config|
+
+  config.ssh.username = "vagrant"
+  config.ssh.shell = "bash"
+  config.ssh.insert_key = false
+  config.vm.allow_fstab_modification = false
+
+  (1..2).each do |i|
+    config.vm.define "nixos0#{i}" do |nixos|
+      nixos.vm.box = $box_name
+      config.vm.box_version = $box_version
+      nixos.vm.allow_fstab_modification = false
+      nixos.vm.synced_folder "./", "/vagrant", type: "virtiofs", mount_options: ["uid=1000", "gid=1000"]
+
+      # Incremental MAC address generation
+      base_mac = "525400000000"  # Base MAC
+      mac_address = format('%012x', base_mac.to_i(16) + i)  # Incrémentation hexadécimale
+
+      #nixos.vm.network :private_network, ip: "192.168.122.24#{i}", network_name: "default", dhcp: false
+      nixos.vm.network :private_network, 
+        ip: "192.168.123.24#{i}",
+        network_name: "backbone",
+        dhcp: false,
+        mac: mac_address
+
+      nixos.vm.provider "libvirt" do |libvirt|
+          libvirt.memory = 3072
+          libvirt.cpus = 2
+          libvirt.memorybacking :access, :mode => "shared"
+          libvirt.storage :file, :size => '50G'
+      end
+    end
+  end
+
+
+
+
+end
