@@ -61,7 +61,7 @@ if [ "$INSTALL_LOCAL" = "true" ]; then
 else
   ### Install ###
   echo "Install system"
-  nixos-install --flake github:barnaby0x0/nixos#vagrant
+  nixos-install --flake github:barnaby0x0/nixos#vagrant --no-write-lock-file
 fi
 
 ### Cleanup ###
