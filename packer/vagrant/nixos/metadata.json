@@ -2,7 +2,7 @@
   "name": "nixos25.05_base",
   "versions": [
     {
-      "version": "0.0.7",
+      "version": "0.0.10",
       "providers": [
         {
           "name": "libvirt",

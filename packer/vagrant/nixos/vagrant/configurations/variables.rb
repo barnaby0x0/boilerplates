@@ -1,2 +1,2 @@
 $box_name = "nixos25.05_base"
-$box_version = "0.0.7"
+$box_version = "0.0.10"
