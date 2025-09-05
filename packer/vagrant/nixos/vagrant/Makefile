@@ -29,9 +29,8 @@ check-backbone:
 		echo "Réseau backbone démarré avec succès"; \
 	fi
 
-
 up: check-backbone
-	@cd $(MODE) && vagrant up
+	@cd $(MODE) && vagrant up | grep "default: SSH address:" | awk '{print $4}'|cut -d ':' -f1
 
 down:
 	@cd $(MODE) && vagrant destroy -f
