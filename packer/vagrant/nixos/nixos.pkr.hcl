@@ -131,6 +131,11 @@ variable "INSTALL_LOCAL" {
   default = "true"
 }
 
+variable "CONFIG_BRANCH" {
+  type    = string
+  default = "main"
+}
+
 source "qemu" "nixos" {
   accelerator = "kvm"
   boot_command = [
@@ -180,7 +185,8 @@ build {
     execute_command = "sudo su -c '{{ .Vars }} {{ .Path }}'"
     script          = "./scripts/install.sh"
     environment_vars = [
-      "INSTALL_LOCAL=${var.INSTALL_LOCAL}"
+      "INSTALL_LOCAL=${var.INSTALL_LOCAL}",
+      "CONFIG_BRANCH=${var.CONFIG_BRANCH}"
     ]
   }
 

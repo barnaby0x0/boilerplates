@@ -4,6 +4,7 @@ export MACHINE_TYPE=$([ -d /sys/firmware/efi/efivars ] && echo "UEFI" || echo "L
 
 echo $MACHINE_TYPE
 echo $INSTALL_LOCAL
+echo $CONFIG_BRANCH
 
 # Partition disk
 echo "Partition disk"
@@ -62,7 +63,7 @@ else
   ### Install ###
   echo "Install system"
   # nixos-install --flake github:barnaby0x0/nixos#vagrant
-  nixos-install --flake github:barnaby0x0/nixos?ref=lock#vagrant
+  nixos-install --flake github:barnaby0x0/nixos?ref=${CONFIG_BRANCH}#vagrant
 
 fi
 

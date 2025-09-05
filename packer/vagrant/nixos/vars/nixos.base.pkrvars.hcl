@@ -6,3 +6,4 @@ iso_url              = "https://channels.nixos.org/nixos-25.05/latest-nixos-mini
 name                 = "nixos"
 version              = "25.05"
 INSTALL_LOCAL        = "false"
+CONFIG_BRANCH        = "main"
