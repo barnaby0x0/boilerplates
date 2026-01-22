@@ -39,13 +39,24 @@ resource "proxmox_virtual_environment_vm" "vm" {
   # boot_order    = ["scsi0"]
   scsi_hardware = "virtio-scsi-single"
 
-  #disk {
-  #  interface    = "virtio1"
-  #  iothread     = true
-  #  datastore_id = each.value.disk.storage
-  #  size         = each.value.disk.size
-  #  discard      = "ignore"
-  #}
+  # disk {
+  #   interface    = "virtio0"
+  #   iothread     = true
+  #   datastore_id = each.value.disk.storage
+  #   size         = each.value.disk.size
+  #   discard      = "ignore"
+  # }
+
+  dynamic "disk" {
+    for_each = each.value.disks
+    content {
+      interface    = disk.value.interface
+      iothread     = disk.value.iothread
+      datastore_id = disk.value.storage
+      size         = disk.value.size
+      discard      = disk.value.discard
+    }
+  }
 
   initialization {
     datastore_id      = "local-lvm"
