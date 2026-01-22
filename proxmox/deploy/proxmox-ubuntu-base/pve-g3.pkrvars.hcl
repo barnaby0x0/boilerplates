@@ -1,0 +1,8 @@
+proxmox_api_url = "https://192.168.1.100:8006/api2/json"
+proxmox_api_token_id = "packer@pve!automation"
+proxmox_api_token_secret = "91351c14-0858-4a17-84b6-1133c3c2d067"
+ssh_password = "toor"
+cores = "4"
+memory = "4096"
+http_bind_address = "192.168.1.29:8080"
+vm_id = "191"

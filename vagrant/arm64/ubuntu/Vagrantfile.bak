@@ -1,0 +1,33 @@
+# Vagrantfile — Ubuntu 24.04 (arm64) on libvirt
+Vagrant.configure("2") do |config|
+  # An Ubuntu box that publishes arm64 images for libvirt.
+  # Works on ARM hosts natively; on x86 hosts it will use QEMU emulation (slow).
+  config.vm.box = "cloud-image/ubuntu-24.04"
+
+  config.vm.hostname = "ubuntu-arm64"
+  config.ssh.insert_key = false
+
+  # rsync avoids VirtualBox/NFS quirks on some hosts; disable if you don't need it.
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+
+  config.vm.provider :libvirt do |lv|
+    lv.uri           = "qemu:///system"
+    lv.driver        = "kvm"
+    lv.memory        = 4096
+    lv.cpus          = 2
+    lv.machine_type  = "virt"           # typical for aarch64 guests
+    lv.cpu_mode      = "host-passthrough"
+    lv.graphics_type = "none"           # headless (use SSH)
+    lv.video_type    = "none"   # don't add a PCI video device
+    lv.nested        = true
+    lv.disk_bus       = "virtio"
+    lv.nic_model_type = "virtio"
+  end
+
+  # Helpful in most cloud-style Ubuntu images
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update -y
+    sudo apt-get install -y qemu-guest-agent
+  SHELL
+end
+

@@ -1,0 +1,37 @@
+# Ubuntu 24.04 (arm64) on libvirt via QEMU/TCG + UEFI + USB input
+Vagrant.configure("2") do |config|
+  config.vm.box = "cloud-image/ubuntu-24.04"
+  config.vm.hostname = "ubuntu-arm64"
+  config.ssh.insert_key = false
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+
+  config.vm.provider :libvirt do |lv|
+    # Cross-arch emulation (x86_64 host → arm64 guest)
+    lv.driver        = "qemu"
+    lv.uri           = "qemu:///system"
+    lv.machine_arch  = "aarch64"
+    lv.machine_type  = "virt"
+    lv.emulator_path = "/usr/bin/qemu-system-aarch64"
+    lv.cpu_mode      = "custom"
+    lv.cpu_model     = "cortex-a57"
+
+    # UEFI firmware (ACPI on aarch64 requires UEFI)
+    lv.loader        = "/usr/share/AAVMF/AAVMF_CODE.fd"
+    lv.nvram         = "/usr/share/AAVMF/AAVMF_VARS.fd"
+
+    # Headless; avoid PCI video
+    lv.graphics_type = "none"
+    lv.video_type    = "none"
+
+    # Virtio disk/net
+    lv.disk_bus         = "virtio"
+    lv.nic_model_type   = "virtio"
+
+    # ✅ Fix the PS/2 error: use USB input + USB3 controller
+    lv.usb_controller :model => "qemu-xhci"
+    lv.input :type => "tablet", :bus => "usb"
+
+    lv.cpus   = 2
+    lv.memory = 4096
+  end
+end
