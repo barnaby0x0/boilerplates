@@ -29,7 +29,7 @@
 # }
 
 resource "proxmox_virtual_environment_file" "cloud_user_config" {
-  for_each     = { for vm in var.vm_configs : vm.id => vm }
+  for_each     = { for vm in var.vm_configs : vm.id => vm if vm.deploy }
   content_type = "snippets"
   datastore_id = "snippets"
   node_name    = var.target_node
@@ -44,7 +44,7 @@ resource "proxmox_virtual_environment_file" "cloud_user_config" {
 }
 
 resource "proxmox_virtual_environment_file" "cloud_network_config" {
-  for_each = { for vm in var.vm_configs : vm.id => vm }
+  for_each = { for vm in var.vm_configs : vm.id => vm if vm.deploy }
 
   content_type = "snippets"
   datastore_id = "snippets"
