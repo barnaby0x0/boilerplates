@@ -1,3 +1,68 @@
+resource "proxmox_virtual_environment_container" "ct" {
+  for_each = { for ct in var.ct_configs : ct.id => ct if ct.deploy }
+
+  description = each.value.description
+  tags        = each.value.tags
+
+  vm_id     = each.value.vm_id
+  node_name = each.value.target_node
+
+  dynamic "network_interface" {
+    for_each = each.value.network_interfaces
+    content {
+      name   = network_interface.value.name
+      bridge = network_interface.value.bridge
+    }
+  }
+
+  dynamic "disk" {
+    for_each = each.value.disks
+    content {
+      datastore_id = disk.value.datastore_id
+      size         = disk.value.size
+    }
+  }
+
+  initialization {
+    hostname = each.value.hostname
+
+    ip_config {
+      dynamic "ipv4" {
+        for_each = each.value.ipv4_configs
+        content {
+          address = ipv4.value.address
+          gateway = ipv4.value.gateway
+        }
+      }
+    }
+
+    user_account {
+      keys = [
+        trimspace(tls_private_key.ubuntu_container_key.public_key_openssh)
+      ]
+      password = random_password.ubuntu_container_password.result
+    }
+  }
+
+  unprivileged = each.value.unprivileged
+
+  features {
+    nesting = each.value.features.nesting
+  }
+
+  operating_system {
+    template_file_id = each.value.operating_system.template_file_id
+    type             = each.value.operating_system.type
+  }
+
+  startup {
+    order      = each.value.startup.order
+    up_delay   = each.value.startup.up_delay
+    down_delay = each.value.startup.down_delay
+  }
+}
+
+
 resource "proxmox_virtual_environment_container" "ubuntu_container" {
   description = "Wireguard Managed by Terraform"
   tags        = ["wireguard"]
