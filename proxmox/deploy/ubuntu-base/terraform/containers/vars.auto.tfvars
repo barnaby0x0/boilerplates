@@ -6,12 +6,18 @@ api_token   = "terraform@pve!automation=ccbf32e0-02bd-423e-9030-989e2a47050b"
 
 ct_configs = [
   {
-    id          = "test_container"
-    vm_id       = 901
+    id          = "lvm_testing"
+    vm_id       = 105
     target_node = "pve"
     description = "Container managed by terraform for testing purpose."
     tags        = ["test"]
     hostname    = "test-container"
+    cpu = {
+      cores = 2
+    }
+    memory = {
+      dedicated = 1024
+    }
     network_interfaces = {
       eth0 = {
         name   = "eth0"
@@ -25,7 +31,7 @@ ct_configs = [
     ipv4_configs = {
       eth0 = {
         #address = "dhcp"
-        address = "192.168.1.107/24"
+        address = "192.168.1.105/24"
         gateway = "192.168.1.1"
       }
     }
@@ -37,6 +43,5 @@ ct_configs = [
     }
     unprivileged = true
     deploy       = false
-
   }
 ]

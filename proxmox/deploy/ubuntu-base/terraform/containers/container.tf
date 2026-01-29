@@ -7,6 +7,13 @@ resource "proxmox_virtual_environment_container" "ct" {
   vm_id     = each.value.vm_id
   node_name = each.value.target_node
 
+  cpu {
+    cores = each.value.cpu.cores
+  }
+  memory {
+    dedicated = each.value.memory.dedicated
+  }
+
   dynamic "network_interface" {
     for_each = each.value.network_interfaces
     content {

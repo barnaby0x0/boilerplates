@@ -25,6 +25,15 @@ variable "ct_configs" {
     target_node = string
     tags        = list(string)
     hostname    = string
+    cpu = optional(object({
+      architecture = optional(string)
+      cores        = optional(number)
+      units        = optional(number)
+    }))
+    memory = optional(object({
+      dedicated = optional(number)
+      swap      = optional(number)
+    }))
     network_interfaces = map(object({
       name   = string
       bridge = string
@@ -44,7 +53,7 @@ variable "ct_configs" {
       }), {
       nesting = true
     })
-
+    start_on_boot = optional(bool)
     startup = optional(object({
       order      = string
       up_delay   = string
