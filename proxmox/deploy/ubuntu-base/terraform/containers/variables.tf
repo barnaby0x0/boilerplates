@@ -1,20 +1,21 @@
 variable "proxmox_connection" {
   description = "Proxmox connection info (url, token)"
   type = object({
-    proxmox_url = string
-    api_token   = string
+    proxmox_url    = string
+    api_token      = optional(string)
+    root_api_token = optional(string)
   })
 }
 
-variable "proxmox_url" {
-  type        = string
-  description = "proxmox api url"
-}
+# variable "proxmox_url" {
+#   type        = string
+#   description = "proxmox api url"
+# }
 
-variable "api_token" {
-  type        = string
-  description = "proxmox api token"
-}
+# variable "api_token" {
+#   type        = string
+#   description = "proxmox api token"
+# }
 
 variable "ct_configs" {
   description = "List of Containers configurations"
@@ -53,7 +54,7 @@ variable "ct_configs" {
       }), {
       nesting = true
     })
-    start_on_boot = optional(bool)
+    start_on_boot = optional(bool, true)
     startup = optional(object({
       order      = string
       up_delay   = string
@@ -74,7 +75,8 @@ variable "ct_configs" {
       type             = "ubuntu"
     })
 
-    deploy = bool
+    deploy              = bool
+    hook_script_file_id = optional(string)
   }))
 }
 

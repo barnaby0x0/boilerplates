@@ -67,88 +67,75 @@ resource "proxmox_virtual_environment_container" "ct" {
     up_delay   = each.value.startup.up_delay
     down_delay = each.value.startup.down_delay
   }
+  #hook_script_file_id = proxmox_virtual_environment_file.hook_script.id
 }
 
+# resource "proxmox_virtual_environment_file" "hook_script" {
+#   #provider     = proxmox.root
+#   content_type = "snippets"
+#   datastore_id = "snippets"
+#   node_name    = "pve"
+#   # Hook scripts must be executable, otherwise the Proxmox VE API will reject the configuration for the VM/CT.
+#   file_mode = "0700"
 
-resource "proxmox_virtual_environment_container" "ubuntu_container" {
-  description = "Wireguard Managed by Terraform"
-  tags        = ["wireguard"]
-  node_name   = "pve"
-  vm_id       = 200
+#   source_raw {
+#     data      = <<-EOF
+#       #!/usr/bin/env bash
+#       pct exec 910 -- bash -c 'apt-get update && apt-get install curl -y'
+#       pct exec 910 -- bash -c 'mkdir -p /root/nginx'
+#       pct exec 910 -- bash -c 'curl http://192.168.1.29:8080/files/nginxproxymanager/configs/docker-compose.yml -o /root/nginx/docker-compose.yml'
+#       EOF
+#     file_name = "prepare-hook.sh"
+#   }
+# }
 
-  initialization {
-    hostname = "wg-container"
 
-    ip_config {
-      ipv4 {
-        #address = "dhcp"
-        address = "192.168.1.103/24"
-        gateway = "192.168.1.1"
-      }
-    }
-    ip_config {
-      ipv4 {
-        #address = "dhcp"
-        address = "10.0.0.3/24"
-        gateway = "10.0.0.1"
-      }
-    }
+# resource "proxmox_virtual_environment_file" "hook_script" {
+#   content_type = "snippets"
+#   datastore_id = "snippets"
+#   node_name    = "pve"
+#   file_mode    = "0700"
 
-    user_account {
-      keys = [
-        trimspace(tls_private_key.ubuntu_container_key.public_key_openssh)
-      ]
-      password = random_password.ubuntu_container_password.result
-    }
-  }
+#   source_raw {
+#     data = <<-EOF
+#       #!/usr/bin/env bash
 
-  network_interface {
-    name   = "eth0"
-    bridge = "vmbr0"
-  }
+#       echo "DEBUG: ARGS = '$@'" >&2
+#       echo "DEBUG: \$1 = '$1'" >&2  
+#       echo "DEBUG: \$2 = '$2'" >&2
+#       VMID=$1
+#       PHASE=$2
+#       echo "DEBUG: VMID=\$VMID PHASE=\$PHASE" >&2
 
-  network_interface {
-    name   = "eth1"
-    bridge = "vnet01"
-  }
 
-  disk {
-    datastore_id = "local-lvm"
-    size         = 4
-  }
+#       # Hookscript pour CT $1, phase $2
 
-  unprivileged = true
 
-  features {
-    nesting = true
-  }
+#       case "$PHASE" in
+#         pre-start)
+#           echo "Pre-start pour CT $VMID: préparation" >&2
+#           # Ici: commandes avant démarrage (ex: créer des fichiers)
+#           ;;
+#         post-start)
+#           echo "Post-start pour CT $VMID: CT démarré, réseau up" >&2
+#           # ATTENTION: $VMID est dynamique, pas hardcodé 910 !
+#           pct exec $VMID -- bash -c 'apt-get update && apt-get install -y curl'
+#           pct exec $VMID -- bash -c 'mkdir -p /root/nginx'
+#           pct exec $VMID -- bash -c 'curl http://192.168.1.29:8080/files/nginxproxymanager/configs/docker-compose.yml -o /root/nginx/docker-compose.yml'
+#           ;;
+#         pre-stop)
+#           echo "Pre-stop pour CT $VMID: arrêt" >&2
+#           ;;
+#         *)
+#           echo "Phase inconnue: $PHASE" >&2
+#           exit 1
+#           ;;
+#       esac
+#       EOF
+#     file_name = "prepare-hook.sh"
+#   }
+# }
 
-  operating_system {
-    #template_file_id = proxmox_virtual_environment_download_file.latest_ubuntu_22_jammy_lxc_img.id
-    # Or you can use a volume ID, as obtained from a "pvesm list <storage>"
-    template_file_id = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
-    type             = "ubuntu"
-  }
-
-  #  mount_point {
-  #    # bind mount, *requires* root@pam authentication
-  #    volume = "/mnt/bindmounts/shared"
-  #    path   = "/mnt/shared"
-  #  }
-
-  #mount_point {
-  ## volume mount, a new volume will be created by PVE
-  #volume = "local-lvm"
-  #size   = "10G"
-  #path   = "/mnt/volume"
-  #}
-
-  startup {
-    order      = "3"
-    up_delay   = "60"
-    down_delay = "60"
-  }
-}
 
 #resource "proxmox_virtual_environment_download_file" "latest_ubuntu_22_jammy_lxc_img" {
 #  content_type = "vztmpl"
