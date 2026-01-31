@@ -18,11 +18,11 @@ variable "ssh_password" {
 }
 
 variable "cores" {
-  type      = string
+  type = string
 }
 
 variable "memory" {
-  type      = string
+  type = string
 }
 
 variable "http_bind_address" {

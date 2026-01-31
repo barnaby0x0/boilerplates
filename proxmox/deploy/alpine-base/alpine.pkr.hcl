@@ -32,11 +32,11 @@ variable "ssh_password" {
 }
 
 variable "cores" {
-  type      = string
+  type = string
 }
 
 variable "memory" {
-  type      = string
+  type = string
 }
 
 variable "http_bind_address" {
@@ -158,7 +158,7 @@ source "proxmox-iso" "alpine" {
   # http_port_min     = 8080
   # http_port_max     = 8080
   # http_port     = 8080
-  ssh_host = "192.168.1.109"
+  ssh_host     = "192.168.1.109"
   ssh_username = "root"
 
   # (Option 1) Add your Password here
@@ -177,20 +177,17 @@ build {
 
   name    = "alpine"
   sources = ["source.proxmox-iso.alpine"]
-  
+
   # Provisioning the VM Template for Cloud-Init Integration in Proxmox #1
-  #  provisioner "shell" {
-  #    inline = [
-  #      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
-  #      "sudo rm /etc/ssh/ssh_host_*",
-  #      "sudo truncate -s 0 /etc/machine-id",
-  #      "sudo cloud-init clean",
-  #      "sudo rm -f /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg",
-  #      "sudo sync",
-  #      "sudo ssh-keygen -A",
-  #      "sudo systemctl enable --now ssh.service"
-  #    ]
-  #  }
+  provisioner "shell" {
+    inline = [
+      "apk --no-cache --cache-max-age 30 add qemu-guest-agent cloud-init py3-netifaces sudo util-linux e2fsprogs-extra",
+      "rc-update add qemu-guest-agent",
+      "rc-update add cloud-init default",
+      "rc-update add cloud-init-local default",
+      "setup-cloud-init"
+    ]
+  }
 
   # Provisioning the VM Template for Cloud-Init Integration in Proxmox #2
   provisioner "file" {
@@ -205,13 +202,11 @@ build {
       "cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg",
       "sed -i '/iface eth0 inet static/,/gateway/d' /etc/network/interfaces",
       "sed -i '/auto eth0/a iface eth0 inet dhcp' /etc/network/interfaces"
-      ]
+    ]
   }
 
-  #	provisioner "shell" {
-  #	  script = "./scripts/install-docker.sh"
-  #	}
-  
-  # Add additional provisioning scripts here
-  # ...
+  provisioner "shell" {
+    script = "./scripts/install-docker.sh"
+  }
+
 }
