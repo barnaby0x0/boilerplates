@@ -110,7 +110,7 @@ vm_configs = [
       "sysctl -w net.ipv4.ip_forward=1",
       "iptables-restore < /opt/iptables.rules"
     ]
-    deploy = true
+    deploy = false
   },
   {
     id          = "nginx"
@@ -169,6 +169,6 @@ vm_configs = [
       "sysctl -w net.ipv4.ip_forward=1",
       "iptables-restore < /opt/iptables.rules"
     ]
-    deploy = true
+    deploy = false
   }
 ]

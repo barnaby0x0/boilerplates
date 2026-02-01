@@ -134,11 +134,12 @@ source "proxmox-iso" "alpine" {
     "wget http://{{ .HTTPIP }}/alpine/answers<enter><wait>",
     "wget http://{{ .HTTPIP }}/alpine/configure<enter><wait>",
     "export ERASE_DISKS=/dev/vda<enter>",
-    "export USEROPTS='-a -u -g audio,video,netdev user'<enter>",
-    "export USERSSHKEY='http://{{ .HTTPIP }}/alpine/ssh.keys'<enter>",
+    #"export USEROPTS='-a -u -g audio,video,netdev user'<enter>",
+    #"export USERSSHKEY='http://{{ .HTTPIP }}/alpine/ssh.keys'<enter>",
     "setup-alpine -f $PWD/answers<enter><wait10>",
     "toor<enter><wait>",
-    "toor<enter><wait15>",
+    "toor<enter><wait5>",
+    "no<enter><wait2>",
     "sh configure<enter>"
     #";ount >dev>vdq# >;nt<enter>"
     #"echo 4Per;itRootLogin yes4 // >;nt>etc>sshd8config<enter>",
@@ -181,10 +182,11 @@ build {
   # Provisioning the VM Template for Cloud-Init Integration in Proxmox #1
   provisioner "shell" {
     inline = [
-      "apk --no-cache --cache-max-age 30 add qemu-guest-agent cloud-init py3-netifaces sudo util-linux e2fsprogs-extra",
+      "apk --no-cache --cache-max-age 30 add bash qemu-guest-agent cloud-init py3-netifaces sudo util-linux e2fsprogs-extra docker docker-compose",
       "rc-update add qemu-guest-agent",
       "rc-update add cloud-init default",
       "rc-update add cloud-init-local default",
+      "rc-update add docker boot",
       "setup-cloud-init"
     ]
   }
@@ -205,8 +207,8 @@ build {
     ]
   }
 
-  provisioner "shell" {
-    script = "./scripts/install-docker.sh"
-  }
+  #provisioner "shell" {
+  #  script = "./scripts/install-docker.sh"
+  #}
 
 }

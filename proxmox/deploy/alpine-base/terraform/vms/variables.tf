@@ -69,6 +69,11 @@ variable "vm_configs" {
       shell               = string
       ssh_authorized_keys = string
     }))
+    files = optional(list(object({
+      path        = string
+      permissions = string
+      content     = string
+    })))
     cmds   = list(string)
     deploy = bool
   }))

@@ -7,6 +7,7 @@ resource "proxmox_virtual_environment_file" "cloud_user_config" {
   source_raw {
     data = templatefile("cloud-init/user_data", {
       users = each.value.users
+      files = each.value.files
       cmds  = each.value.cmds
     })
     file_name = "${each.value.hostname}-ci-user.yml"

@@ -1,2 +1,2 @@
-apk update
-apk add docker docker-compose
+# apk update
+# apk add docker docker-compose
