@@ -182,7 +182,7 @@ build {
   # Provisioning the VM Template for Cloud-Init Integration in Proxmox #1
   provisioner "shell" {
     inline = [
-      "apk --no-cache --cache-max-age 30 add bash qemu-guest-agent cloud-init py3-netifaces sudo util-linux e2fsprogs-extra docker docker-compose",
+      "apk --no-cache --cache-max-age 30 add bash rsync qemu-guest-agent cloud-init py3-netifaces sudo parted util-linux e2fsprogs-extra docker docker-compose",
       "rc-update add qemu-guest-agent",
       "rc-update add cloud-init default",
       "rc-update add cloud-init-local default",

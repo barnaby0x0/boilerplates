@@ -1,13 +1,5 @@
-# proxmox_url = "https://192.168.1.100:8006/api2/json"
-# api_token   = "terraform@pve!automation=ccbf32e0-02bd-423e-9030-989e2a47050b"
-
-proxmox_connection = {
-  proxmox_url = "https://192.168.1.100:8006/api2/json"
-  api_token   = "terraform@pve!automation=ccbf32e0-02bd-423e-9030-989e2a47050b"
-}
-
-# vm_configs = [
-#   {
+# locals {
+#   vm1 = {
 #     id          = "nginxproxymanager"
 #     vm_id       = 110
 #     hostname    = "nginxproxymanager"
@@ -95,4 +87,24 @@ proxmox_connection = {
 #     ]
 #     deploy = true
 #   }
-# ]
+# }
+
+locals {
+  vm_configs = flatten([
+    for file in fileset(var.vm_configs_dir, "*.yaml") : [
+      yamldecode(file("${var.vm_configs_dir}/${file}"))
+    ]
+  ])
+}
+
+module "config" {
+  source     = "./modules/config"
+  vm_configs = local.vm_configs
+  #   vm_configs = concat(
+  #     tolist([local.vm1])
+  #     )
+}
+
+locals {
+  configs = module.config.vm_configs
+}

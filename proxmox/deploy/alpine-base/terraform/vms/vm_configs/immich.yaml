@@ -1,0 +1,64 @@
+---
+id: "B"
+vm_id: 409
+template_id: "190"
+hostname: "immich-restored"
+domain: "net.local"
+cpu_type: "x86-64-v2-AES"
+cpu_cores: 4
+cpu_sockets: 1
+memory: 4096
+vm_user: "sysadmin"
+disks:
+  # disk0:
+  #   interface: "virtio0"
+  #   storage: "local-lvm"
+  #   size: 25
+  #   iothread: true
+  #   discard: "ignore"
+  disk1:
+    interface: "virtio1"
+    storage: "local-lvm"
+    size: 100
+    iothread: true
+    discard: "ignore"
+network_devices:
+  ens18:
+    bridge: "vmbr0"
+    addresses: "192.168.1.209/24"
+    gateway4: "192.168.1.1"
+    routes:
+      - to: "default"
+        via: "192.168.1.1"
+        metric: "10"
+dns_servers: ["8.8.8.8", "8.8.4.4"]
+
+vm_tags: ["immich", "current", "terraform"]
+template_tag: "router"
+started: true
+onboot: true
+target_node: "pve"
+target_node_domain: ""
+# addresses: ["192.168.1.209/24"]
+# gateway: "192.168.1.1"
+
+# users:
+#   - name: "user"
+#     password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
+#     groups: "[adm, sudo]"
+#     lock_passwd: "false"
+#     sudo: "ALL=(ALL) NOPASSWD:ALL"
+#     shell: "/bin/bash"
+#     ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
+
+users: []
+files: []
+cmds:
+  - "wget http://192.168.1.29:8080/files/immich/init.sh"
+  - "chmod +x $PWD/init.sh"
+  - "ls -la > /home/user/log"
+  - "echo $PWD >> /home/user/log"
+  - "chmod 777 /home/user/log"
+  - "$PWD/init.sh > /home/user/log"
+
+deploy: false
