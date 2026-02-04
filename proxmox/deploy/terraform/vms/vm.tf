@@ -1,5 +1,6 @@
 resource "proxmox_virtual_environment_vm" "vm" {
-  for_each = { for vm in var.vm_configs : vm.id => vm if vm.deploy }
+  #for_each = { for vm in var.vm_configs : vm.id => vm if vm.deploy }
+  for_each = { for vm in local.configs : vm.id => vm if vm.deploy }
 
   vm_id     = each.value.vm_id
   name      = "${each.value.hostname}.${each.value.domain}"
@@ -22,13 +23,21 @@ resource "proxmox_virtual_environment_vm" "vm" {
   memory { dedicated = each.value.memory }
 
   dynamic "network_device" {
-    for_each = each.value.bridges
+    for_each = each.value.network_devices
     content {
-      #bridge = each.value.bridge
-      bridge = network_device.value
-      model  = "virtio"
+      bridge = network_device.value.bridge
+      model  = network_device.value.model
     }
   }
+
+  # dynamic "network_device" {
+  #   for_each = each.value.bridges
+  #   content {
+  #     #bridge = each.value.bridge
+  #     bridge = network_device.value
+  #     model  = "virtio"
+  #   }
+  # }
 
   lifecycle {
     ignore_changes = [
@@ -63,7 +72,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
     interface         = "ide2"
     user_data_file_id = proxmox_virtual_environment_file.cloud_user_config[each.key].id
     #user_data_file_id    = proxmox_virtual_environment_file.cloud_user_config.id
-    meta_data_file_id    = proxmox_virtual_environment_file.cloud_meta_config.id
+    meta_data_file_id    = proxmox_virtual_environment_file.cloud_meta_config[each.key].id
     network_data_file_id = proxmox_virtual_environment_file.cloud_network_config[each.key].id
   }
 }

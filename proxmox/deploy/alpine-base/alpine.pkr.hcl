@@ -92,7 +92,7 @@ source "proxmox-iso" "alpine" {
   scsi_controller = "virtio-scsi-pci"
 
   disks {
-    disk_size    = "15G"
+    disk_size    = "2G"
     format       = "raw"
     storage_pool = "${local.disk_storage}"
     type         = "virtio"
@@ -141,11 +141,6 @@ source "proxmox-iso" "alpine" {
     "toor<enter><wait5>",
     "no<enter><wait2>",
     "sh configure<enter>"
-    #";ount >dev>vdq# >;nt<enter>"
-    #"echo 4Per;itRootLogin yes4 // >;nt>etc>sshd8config<enter>",
-    #"mount /dev/vda3 /mnt<enter>",
-    #"echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",    
-    #"reboot<enter>"
   ]
 
   # Useful for debugging
@@ -170,7 +165,7 @@ source "proxmox-iso" "alpine" {
 
   # Raise the timeout, when installation takes longer
   ssh_timeout = "20m"
-  tags        = "packer;router"
+  tags        = "packer;alpine"
 }
 
 # Build Definition to create the VM Template
@@ -183,7 +178,7 @@ build {
   provisioner "shell" {
     inline = [
       "apk --no-cache --cache-max-age 30 add bash rsync qemu-guest-agent cloud-init py3-netifaces sudo parted util-linux e2fsprogs-extra docker docker-compose",
-      "rc-update add qemu-guest-agent",
+      "rc-update add qemu-guest-agent default",
       "rc-update add cloud-init default",
       "rc-update add cloud-init-local default",
       "rc-update add docker boot",

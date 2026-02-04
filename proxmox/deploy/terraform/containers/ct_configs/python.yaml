@@ -1,0 +1,29 @@
+---
+id: "python"
+vm_id: 920
+target_node: "pve"
+description: "Container managed by terraform: python testing for yfinance"
+tags: ["test", "terraform"]
+hostname: "python"
+cpu:
+  cores: 2
+memory:
+  dedicated: 512
+network_interfaces:
+  eth0:
+    name: "eth0"
+    bridge: "vmbr0"
+ipv4_configs:
+  eth0:
+    address: "192.168.1.203/24"
+    gateway: "192.168.1.1"
+
+disks:
+  disk0:
+    datastore_id: "local-lvm"
+    size: 6
+
+unprivileged: true
+
+hook_script_file_id: ""
+deploy: true

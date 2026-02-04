@@ -114,7 +114,7 @@ ct_configs = [
       }
     }
     unprivileged        = true
-    deploy              = true
+    deploy              = false
     hook_script_file_id = ""
   }
 

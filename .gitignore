@@ -1,2 +1,3 @@
 **/.vagrant
 **/packer.log
+**/.terraform

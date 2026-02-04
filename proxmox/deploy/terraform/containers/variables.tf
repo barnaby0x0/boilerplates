@@ -7,6 +7,12 @@ variable "proxmox_connection" {
   })
 }
 
+variable "ct_configs_dir" {
+  description = "Ct Configuration directory"
+  type        = string
+  default     = "ct_configs"
+}
+
 # variable "proxmox_url" {
 #   type        = string
 #   description = "proxmox api url"

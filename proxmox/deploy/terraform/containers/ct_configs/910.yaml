@@ -1,0 +1,29 @@
+---
+id: "vpn"
+vm_id: 910
+target_node: "pve"
+description: "Container managed by terraform: vpn entrypoint"
+tags: ["support", "network", "vpn", "terraform"]
+hostname: "vpn"
+cpu:
+  cores: 1
+memory:
+  dedicated: 512
+network_interfaces:
+  eth0:
+    name: "eth0"
+    bridge: "vmbr0"
+ipv4_configs:
+  eth0:
+    address: "192.168.1.201/24"
+    gateway: "192.168.1.1"
+
+disks:
+  disk0:
+    datastore_id: "local-lvm"
+    size: 4
+
+unprivileged: true
+
+hook_script_file_id: ""
+deploy: false

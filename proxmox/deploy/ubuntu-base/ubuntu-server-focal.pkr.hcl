@@ -91,7 +91,7 @@ source "proxmox-iso" "ubuntu-server-focal" {
   scsi_controller = "virtio-scsi-pci"
 
   disks {
-    disk_size    = "15G"
+    disk_size    = "8G"
     format       = "raw"
     storage_pool = "${local.disk_storage}"
     type         = "virtio"
@@ -157,7 +157,7 @@ source "proxmox-iso" "ubuntu-server-focal" {
 
   # Raise the timeout, when installation takes longer
   ssh_timeout = "20m"
-  tags        = "packer;router"
+  tags        = "packer;ubuntu"
 }
 
 # Build Definition to create the VM Template
@@ -198,6 +198,4 @@ build {
 	  script = "./scripts/install-docker.sh"
 	}
   
-  # Add additional provisioning scripts here
-  # ...
 }

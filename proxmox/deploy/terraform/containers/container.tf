@@ -1,5 +1,5 @@
 resource "proxmox_virtual_environment_container" "ct" {
-  for_each = { for ct in var.ct_configs : ct.id => ct if ct.deploy }
+  for_each = { for ct in local.configs : ct.id => ct if ct.deploy }
 
   description = each.value.description
   tags        = each.value.tags
