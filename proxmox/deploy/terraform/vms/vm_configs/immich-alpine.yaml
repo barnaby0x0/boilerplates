@@ -65,4 +65,4 @@ cmds:
   - "bash $PWD/immich/install-immich.sh"
   - "$PWD/init.sh"
 
-deploy: false
+deploy: true
