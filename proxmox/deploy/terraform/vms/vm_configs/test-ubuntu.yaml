@@ -9,6 +9,8 @@ cpu_cores: 2
 cpu_sockets: 1
 memory: 1024
 vm_user: "sysadmin"
+startup:
+  order: "1"
 disks: {}
 # disks:
 #   disk0:

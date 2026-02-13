@@ -1,6 +1,6 @@
 variable "ct_configs" {
   description = "List of Containers configurations"
-  default = []
+  default     = []
   type = list(object({
     id          = string
     vm_id       = number
@@ -38,14 +38,12 @@ variable "ct_configs" {
     })
     start_on_boot = optional(bool, true)
     startup = optional(object({
-      order      = string
-      up_delay   = string
-      down_delay = string
-      }), {
-      order      = "3"
-      up_delay   = "60"
-      down_delay = "60"
-    })
+      order      = optional(string)
+      up_delay   = optional(string)
+      down_delay = optional(string)
+    }), {})
+
+    ssh_public_keys = optional(list(string), [])
 
     operating_system = optional(object({
       #template_file_id = proxmox_virtual_environment_download_file.latest_ubuntu_22_jammy_lxc_img.id

@@ -1,8 +1,8 @@
 ---
-id: "testmachinealpine"
-vm_id: 250
-template_id: "192"
-hostname: "testmachinealpine"
+id: "nfs_server_ubuntu"
+vm_id: 116
+template_id: "1010"
+hostname: "nfs-server-ubuntu"
 domain: "net.local"
 cpu_type: "x86-64-v2-AES"
 cpu_cores: 2
@@ -16,10 +16,7 @@ disks:
     size: 15
     iothread: true
     discard: "ignore"
-# bridges: [
-#   "vmbr0"
-# ]
-vm_tags: ["test", "alpine", "terraform"]
+vm_tags: ["nfs", "ubuntu", "terraform"]
 template_tag: "router"
 started: true
 onboot: true
@@ -27,9 +24,9 @@ target_node: "pve"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
 network_devices:
-  eth0:
+  ens18:
     bridge: "vmbr0"
-    addresses: "192.168.1.197/24"
+    addresses: "192.168.1.59/24"
     gateway4: "192.168.1.1"
     routes:
       - to: "default"
@@ -45,6 +42,12 @@ users:
     ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
 
 files: []
-cmds: []
+cmds: [
+  "sleep 3",
+  "apt-get update && apt-get install wget -y",
+  "wget http://192.168.1.29:8080/files/nfs/nfs-server-setup.sh",
+  "bash $PWD/nfs-server-setup.sh", 
+  # "rm $PWD/nfs-server-setup-alpine.sh"
+]
 deploy: false
 

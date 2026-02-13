@@ -177,6 +177,7 @@ build {
   # Provisioning the VM Template for Cloud-Init Integration in Proxmox #1
   provisioner "shell" {
     inline = [
+      "apk --no-cache --cache-max-age 30 upgrade",
       "apk --no-cache --cache-max-age 30 add bash rsync qemu-guest-agent cloud-init py3-netifaces sudo parted util-linux e2fsprogs-extra docker docker-compose",
       "rc-update add qemu-guest-agent default",
       "rc-update add cloud-init default",
@@ -201,9 +202,4 @@ build {
       "sed -i '/auto eth0/a iface eth0 inet dhcp' /etc/network/interfaces"
     ]
   }
-
-  #provisioner "shell" {
-  #  script = "./scripts/install-docker.sh"
-  #}
-
 }

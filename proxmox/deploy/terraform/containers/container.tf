@@ -44,9 +44,7 @@ resource "proxmox_virtual_environment_container" "ct" {
     }
 
     user_account {
-      keys = [
-        trimspace(tls_private_key.ubuntu_container_key.public_key_openssh)
-      ]
+      keys = concat([trimspace(tls_private_key.ubuntu_container_key.public_key_openssh)], each.value.ssh_public_keys)
       password = random_password.ubuntu_container_password.result
     }
   }
@@ -62,10 +60,14 @@ resource "proxmox_virtual_environment_container" "ct" {
     type             = each.value.operating_system.type
   }
 
-  startup {
-    order      = each.value.startup.order
-    up_delay   = each.value.startup.up_delay
-    down_delay = each.value.startup.down_delay
+  dynamic "startup" {
+    for_each = try(each.value.startup, null) == null ? [] : [each.value.startup]
+
+    content {
+      order      = startup.value.order
+      up_delay   = startup.value.up_delay
+      down_delay = startup.value.down_delay
+    }
   }
   #hook_script_file_id = proxmox_virtual_environment_file.hook_script.id
 }

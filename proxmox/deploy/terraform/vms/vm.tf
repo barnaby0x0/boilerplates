@@ -67,6 +67,16 @@ resource "proxmox_virtual_environment_vm" "vm" {
     }
   }
 
+  dynamic "startup" {
+    for_each = try(each.value.startup, null) == null ? [] : [each.value.startup]
+
+    content {
+      order      = startup.value.order
+      up_delay   = startup.value.up_delay
+      down_delay = startup.value.down_delay
+    }
+  }
+
   initialization {
     datastore_id      = "local-lvm"
     interface         = "ide2"

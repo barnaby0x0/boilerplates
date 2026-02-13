@@ -197,5 +197,9 @@ build {
 	provisioner "shell" {
 	  script = "./scripts/install-docker.sh"
 	}
+
+  provisioner "shell" {
+	  script = "./scripts/upgrade.sh"
+	}
   
 }

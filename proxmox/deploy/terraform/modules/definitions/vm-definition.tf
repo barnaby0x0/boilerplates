@@ -1,16 +1,23 @@
 variable "vm_configs" {
   description = "List of VM configurations"
-  default = []
+  default     = []
   type = list(object({
     id          = string
     vm_id       = number
     hostname    = string
     domain      = string
+    bios        = optional(string, "seabios")
     cpu_type    = optional(string, "x86-64-v2-AES")
     cpu_cores   = number
     cpu_sockets = number
     memory      = number
     vm_user     = string
+
+    startup = optional(object({
+      order      = optional(string)
+      up_delay   = optional(string)
+      down_delay = optional(string)
+    }))
 
     disks = optional(map(object({
       interface = string
@@ -35,10 +42,10 @@ variable "vm_configs" {
     onboot             = bool
     target_node        = string
     target_node_domain = string
-    dns_servers = list(string)
+    dns_servers        = list(string)
     network_devices = map(object({
-      bridge   = string
-      model  = optional(string, "virtio")
+      bridge    = string
+      model     = optional(string, "virtio")
       addresses = string
       gateway4  = string
 

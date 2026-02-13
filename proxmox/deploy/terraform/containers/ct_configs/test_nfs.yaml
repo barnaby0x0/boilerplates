@@ -1,10 +1,10 @@
 ---
-id: "python"
-vm_id: 920
+id: "testnfs"
+vm_id: 940
 target_node: "pve"
 description: "Container managed by terraform: python testing for yfinance"
 tags: ["test", "terraform"]
-hostname: "python"
+hostname: "testnfs"
 cpu:
   cores: 2
 memory:
@@ -15,16 +15,17 @@ network_interfaces:
     bridge: "vmbr0"
 ipv4_configs:
   eth0:
-    address: "192.168.1.203/24"
+    address: "192.168.1.244/24"
     gateway: "192.168.1.1"
 
 disks:
   disk0:
-    datastore_id: "local-lvm"
-    size: 6
+    datastore_id: "rpi"
+    size: 10
 
 startup:
-  order: "3"
+  order: "99"
+  up_delay: "240"
 
 unprivileged: true
 

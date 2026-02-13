@@ -1,0 +1,33 @@
+---
+id: "http_server"
+vm_id: 910
+target_node: "pve"
+description: "Container managed by terraform: http server"
+tags: ["automation", "terraform", "http_server"]
+hostname: "http-server"
+cpu:
+  cores: 1
+memory:
+  dedicated: 512
+network_interfaces:
+  eth0:
+    name: "eth0"
+    bridge: "vmbr0"
+ipv4_configs:
+  eth0:
+    address: "192.168.1.31/24"
+    gateway: "192.168.1.1"
+
+disks:
+  disk0:
+    datastore_id: "local-lvm"
+    size: 20
+
+startup:
+  order: "3"
+
+unprivileged: true
+
+hook_script_file_id: ""
+ssh_public_keys: ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"]
+deploy: true

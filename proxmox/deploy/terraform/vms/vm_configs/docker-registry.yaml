@@ -1,17 +1,23 @@
 ---
-id: "testmachinealpinebis"
-vm_id: 260
+id: "docker_registry"
+vm_id: 120
 template_id: "1000"
-hostname: "testmachinealpinebis"
+hostname: "registry"
 domain: "net.local"
 cpu_type: "x86-64-v2-AES"
 cpu_cores: 1
 cpu_sockets: 1
 memory: 512
 vm_user: "sysadmin"
-disks: {}
-vm_tags: ["test", "alpine", "terraform"]
-template_tag: "router"
+disks:
+  disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 70
+    iothread: true
+    discard: "ignore"
+vm_tags: ["registry", "docker", "terraform"]
+template_tag: "registry"
 started: true
 onboot: true
 target_node: "pve"
@@ -20,7 +26,7 @@ dns_servers: ["8.8.8.8", "8.8.4.4"]
 network_devices:
   eth0:
     bridge: "vnet01"
-    addresses: "10.0.0.11/24"
+    addresses: "10.0.0.250/24"
     gateway4: "10.0.0.1"
     routes:
       - to: "default"
@@ -39,4 +45,4 @@ files: []
 cmds: [
   "usermod -aG docker user"
 ]
-deploy: false
+deploy: true

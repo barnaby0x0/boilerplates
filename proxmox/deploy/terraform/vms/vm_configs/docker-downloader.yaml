@@ -1,0 +1,80 @@
+---
+id: "downloader"
+vm_id: 131
+template_id: "1000"
+hostname: "downloader"
+domain: "net.local"
+cpu_type: "x86-64-v2-AES"
+cpu_cores: 4
+cpu_sockets: 1
+memory: 3072
+vm_user: "sysadmin"
+disks:
+  disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 100
+    iothread: true
+    discard: "ignore"
+vm_tags: ["downloader", "docker", "terraform"]
+template_tag: "registry"
+started: true
+onboot: true
+target_node: "pve"
+target_node_domain: ""
+dns_servers: ["8.8.8.8", "8.8.4.4"]
+network_devices:
+  eth0:
+    bridge: "vnet01"
+    addresses: "10.0.0.21/24"
+    gateway4: "10.0.0.1"
+    routes:
+      - to: "default"
+        via: "10.0.0.1"
+        metric: "10"            
+users:
+  - name: "user"
+    password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
+    groups: "[adm, sudo]"
+    lock_passwd: "false"
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: "/bin/bash"
+    ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
+
+# files: []
+files:
+  - path: "/etc/docker/daemon.json"
+    permissions: "0600"
+    content: |
+      {
+        "insecure-registries": [
+          "10.0.0.250:5000"
+        ]
+      }
+
+  - path: "/home/user/links.txt"
+    permissions: "0755"
+    content: |
+      https://mamot.fr/@YggTorrent
+      http://localhost:9091/transmission/web/
+      https://www.myip.com/
+
+cmds: [
+  "usermod -aG docker user",
+  "mkdir -p /etc/docker",
+  "mkdir /home/user/downloader",
+  "cd /home/user/downloader; wget http://192.168.1.31:8080/files/downloader/docker-compose.yaml",
+  "/home/user/downloader; wget http://192.168.1.31:8080/files/downloader/.env",
+  "mkdir -p /home/user/containers/downloader/transmission/downloads",
+  "mkdir -p /home/user/.secret/vpn/wg_confs",
+  "mkdir -p /home/user/containers/downloader/firefox/Downloads/new",
+  "mkdir -p /home/user/containers/downloader/desktop/home/user/Downloads",
+  "mkdir -p /home/user/containers/downloader/desktop/home/user/.mozilla",
+  "mkdir -p /home/user/containers/downloader/transmission/downloads/complete",
+  "chown -R user:user /home/user/downloader",
+  "chown -R user:user /home/user/containers",
+  "chown -R user:user /home/user/.secret",
+  "service docker restart"
+  #"su -l user -c \"cd /home/user/downloader && docker compose up -d\""
+]
+deploy: true

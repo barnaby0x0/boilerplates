@@ -9,7 +9,13 @@ users:
     shell: ${user.shell}
     passwd: ${user.password}
     ssh_authorized_keys: ${user.ssh_authorized_keys}
-    
+%{ if lookup(user, "uid", "") != "" ~}
+    uid: ${user.uid}
+%{ endif ~}
+%{ if lookup(user, "gid", "") != "" ~}
+    gid: ${user.gid}
+%{ endif ~}    
+
 %{~ endfor }
 
 ssh_pwauth: True ## This line enables ssh password authentication
@@ -19,8 +25,9 @@ write_files:
 %{ for file in files ~}
   - path: ${file.path}
     permissions: ${file.permissions}
-    content:|
+    content: |
       ${indent(6, file.content)}
+
 %{~ endfor }
 %{ endif }
 

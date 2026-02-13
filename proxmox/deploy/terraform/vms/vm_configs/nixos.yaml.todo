@@ -1,22 +1,22 @@
 ---
-id: "immichalpine"
+id: "nixos"
 vm_id: 410
-template_id: "192"
-hostname: "immichalpine"
+template_id: "1000"
+hostname: "nixos"
 domain: "net.local"
 cpu_type: "x86-64-v2-AES"
-cpu_cores: 4
+cpu_cores: 2
 cpu_sockets: 1
-memory: 4096
+memory: 2048
 vm_user: "sysadmin"
 disks:
- disk1:
-    interface: "virtio1"
+ disk0:
+    interface: "virtio0"
     storage: "local-lvm"
-    size: 100
+    size: 50
     iothread: true
     discard: "ignore"
-vm_tags: ["immich", "current", "terraform"]
+vm_tags: ["nixos", "terraform", "test"]
 template_tag: "router"
 started: true
 onboot: true
@@ -24,14 +24,14 @@ target_node: "pve"
 target_node_domain: ""    
 dns_servers: ["8.8.8.8", "8.8.4.4"]
 network_devices:
-  eth0:
-    bridge: "vmbr0"
-    addresses: "192.168.1.219/24"
-    gateway4: "192.168.1.1"
+  ens18:
+    bridge: "vnet01"
+    addresses: "10.0.0.13/24"
+    gateway4: "10.0.0.1"
     routes:
       - to: "default"
-        via: "192.168.1.1"
-        metric: "10"
+        via: "10.0.0.1"
+        metric: "10"           
 users:
   - name: "user"
     password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
@@ -43,17 +43,12 @@ users:
 
 files: []
 cmds:
-  - "wget http://192.168.1.29:8080/files/immich/init.sh"
+  # - "usermod -aG docker user"
+  - "wget http://192.168.1.29:8080/files/immich/init.sh && chmod +x $PWD/init.sh"
   - "wget http://192.168.1.29:8080/files/immich/immich.tgz"
-  - "tar xzf $PWD/immich.tgz"
-  - "cp $PWD/immich/env /tmp && cp $PWD/immich/restoredb.sh /tmp"
+  - "tar xzf $PWD/immich.tgz && rm $PWD/immich.tgz"
+  - "cp $PWD/immich/env $PWD/immich/restoredb.sh /tmp"
   - "bash $PWD/immich/install-immich.sh"
-  - "chmod +x $PWD/init.sh"
-  - "ls -la > /home/user/log"
-  - "echo $PWD >> /home/user/log"
-  - "chmod 777 /home/user/log"
-  - "su - user -c 'echo $(id -u) >> /home/user/log'"
-  - "su - user -c 'echo $(id -g) >> /home/user/log'"
   - "$PWD/init.sh"
 
-deploy: true
+deploy: false
