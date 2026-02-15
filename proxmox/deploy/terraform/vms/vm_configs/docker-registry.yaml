@@ -41,8 +41,51 @@ users:
     shell: "/bin/bash"
     ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
 
-files: []
+files:
+  - path: "/home/user/docker-compose.yaml"
+    permissions: "0700"
+    content: |
+      services:
+        registry:
+          image: registry:latest
+          environment:
+            REGISTRY_AUTH: htpasswd # TODO: make it work with password + cache
+            REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+            REGISTRY_AUTH_HTPASSWD_PATH: /auth/registry.password
+            REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+          volumes:
+            # Mount the password file
+            - /home/user/registry/registry.password:/auth/registry.password
+            # Mount the data directory
+            - /home/user/registry/data:/data
+          ports:
+            - 0.0.0.0:5000:5000
+          restart: unless-stopped
+
+        registry-proxy-cache:
+          image: registry:latest
+          environment:
+            REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+            REGISTRY_PROXY_REMOTEURL: https://registry-1.docker.io
+          volumes:
+            # Mount the data directory
+            - /home/user/registry-proxy-cache/data:/data
+          ports:
+            - 0.0.0.0:5001:5000
+          restart: unless-stopped          
+
+  - path: "/home/user/registry/registry.password"
+    permissions: "0700"
+    content: |
+      victor:$2y$05$B1NBFhshYeRpHfcBohYFduBAlutF.RlybVZyK0ePLprfgbPyvzUci
+
+
 cmds: [
-  "usermod -aG docker user"
+  "usermod -aG docker user",
+  "mkdir -p /home/user/registry/data",
+  "mkdir -p /home/user/registry-proxy-cache/data",
+  "chown -R user:user /home/user/{registry, registry-proxy-cache}",
+  "chown user:user /home/user/docker-compose.yaml",
+  "su -l user -c \"cd /home/user && docker compose up -d\""
 ]
 deploy: true

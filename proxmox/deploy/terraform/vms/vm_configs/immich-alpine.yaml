@@ -1,6 +1,7 @@
 ---
 id: "immichalpine"
 vm_id: 410
+# replicas: 2
 template_id: "1000"
 hostname: "immichalpine"
 domain: "net.local"

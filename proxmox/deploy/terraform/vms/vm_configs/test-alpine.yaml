@@ -1,6 +1,7 @@
 ---
 id: "testmachinealpine"
-vm_id: 250
+vm_id: 700
+replicas: 0
 template_id: "1000"
 hostname: "testmachinealpine"
 domain: "net.local"
@@ -10,7 +11,7 @@ cpu_sockets: 1
 memory: 512
 vm_user: "sysadmin"
 disks: {}
-vm_tags: ["test", "alpine", "terraform"]
+vm_tags: ["test", "alpine", "terraform", "replicas"]
 template_tag: "router"
 started: true
 onboot: true
@@ -46,6 +47,6 @@ users:
 files: []
 cmds: [
   "usermod -aG docker user",
-  "wget http://${http_server_url}:8080/files/immich/init.sh"
+  "wget http://${http_server_url}/files/immich/init.sh"
 ]
-deploy: false
+deploy: true

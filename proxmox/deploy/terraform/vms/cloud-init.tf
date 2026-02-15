@@ -1,5 +1,5 @@
 resource "proxmox_virtual_environment_file" "cloud_user_config" {
-  for_each     = { for vm in local.vm_configs : vm.id => vm if vm.deploy }
+  for_each     = { for vm in local.configs : vm.id => vm if vm.deploy }
   content_type = "snippets"
   datastore_id = "snippets"
   node_name    = var.target_node
@@ -15,7 +15,7 @@ resource "proxmox_virtual_environment_file" "cloud_user_config" {
 }
 
 resource "proxmox_virtual_environment_file" "cloud_network_config" {
-  for_each = { for vm in local.vm_configs : vm.id => vm if vm.deploy }
+  for_each = { for vm in local.configs : vm.id => vm if vm.deploy }
 
   content_type = "snippets"
   datastore_id = "snippets"
@@ -48,7 +48,7 @@ resource "proxmox_virtual_environment_file" "cloud_network_config" {
 # }
 
 resource "proxmox_virtual_environment_file" "cloud_meta_config" {
-  for_each     = { for vm in local.vm_configs : vm.id => vm if vm.deploy }
+  for_each     = { for vm in local.configs : vm.id => vm if vm.deploy }
   content_type = "snippets"
   datastore_id = "snippets" # Utiliser le stockage dédié
   node_name    = var.target_node

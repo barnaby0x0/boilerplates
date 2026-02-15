@@ -3,6 +3,7 @@ variable "vm_configs" {
   default     = []
   type = list(object({
     id          = string
+    replicas    = optional(number)
     vm_id       = number
     hostname    = string
     domain      = string
@@ -76,10 +77,50 @@ variable "vm_configs" {
   }))
 }
 
-# locals {
-#   vm_configs = var.vm_configs
-# }
+locals {
+  # Transformation de la liste vm_configs pour prendre en compte replicas
+  expanded_vm_configs = flatten([
+    for config in var.vm_configs : [
+      for i in range(coalesce(config.replicas, 1)) :
+      merge(
+        config,
+        {
+          # On suffixe l'id seulement si replicas > 1 (ou absent mais >1)
+          id       = coalesce(config.replicas, 0) >= 1 ? "${config.id}_${i + 1}" : config.id
+          hostname = coalesce(config.replicas, 0) >= 1 ? "${config.hostname}-${i + 1}" : config.hostname
+          vm_id    = config.vm_id + i
+
+
+          # Adaptation des adresses IP (incrémentation du dernier octet)
+          network_devices = {
+            for k, v in config.network_devices : k => merge(v, {
+              addresses = (
+                length(regexall("/", v.addresses)) > 0 ?
+                format(
+                  "%s.%d/%s",
+                  join(".", slice(split(".", split("/", v.addresses)[0]), 0, 3)),
+                  tonumber(element(split(".", split("/", v.addresses)[0]), 3)) + i,
+                  split("/", v.addresses)[1]
+                ) :
+                format(
+                  "%s.%d",
+                  join(".", slice(split(".", v.addresses), 0, 3)),
+                  tonumber(element(split(".", v.addresses), 3)) + i
+                )
+              )
+            })
+          }
+        }
+      )
+    ]
+  ])
+}
+
+output "expanded_vm_configs" {
+  value = local.expanded_vm_configs
+}
 
 output "vm_configs" {
-  value = var.vm_configs
+  value = local.expanded_vm_configs
+  # value = var.vm_configs
 }

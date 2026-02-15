@@ -18,10 +18,10 @@ disks:
     size: 10
     iothread: true
     discard: "ignore"
-vm_tags: ["runner", "dind", "gitlab", "ubuntu", "terraform"]
+vm_tags: ["runner", "dind", "gitlab", "ubuntu", "terraform", "automation"]
 template_tag: "router"
 started: true
-onboot: true
+onboot: false
 target_node: "pve"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
