@@ -17,8 +17,9 @@ resource "proxmox_virtual_environment_container" "ct" {
   dynamic "network_interface" {
     for_each = each.value.network_interfaces
     content {
-      name   = network_interface.value.name
-      bridge = network_interface.value.bridge
+      name     = network_interface.value.name
+      bridge   = network_interface.value.bridge
+      firewall = network_interface.value.firewall
     }
   }
 
@@ -44,7 +45,7 @@ resource "proxmox_virtual_environment_container" "ct" {
     }
 
     user_account {
-      keys = concat([trimspace(tls_private_key.ubuntu_container_key.public_key_openssh)], each.value.ssh_public_keys)
+      keys     = concat([trimspace(tls_private_key.ubuntu_container_key.public_key_openssh)], each.value.ssh_public_keys)
       password = random_password.ubuntu_container_password.result
     }
   }
@@ -61,16 +62,79 @@ resource "proxmox_virtual_environment_container" "ct" {
   }
 
   dynamic "startup" {
-    for_each = try(each.value.startup, null) == null ? [] : [each.value.startup]
+    for_each = each.value.startup[*]
 
     content {
-      order      = startup.value.order
-      up_delay   = startup.value.up_delay
-      down_delay = startup.value.down_delay
+      order      = try(startup.value.order, null)
+      up_delay   = try(startup.value.up_delay, null)
+      down_delay = try(startup.value.down_delay, null)
+      # order      = startup.value.order
+      # up_delay   = startup.value.up_delay
+      # down_delay = startup.value.down_delay
     }
   }
   #hook_script_file_id = proxmox_virtual_environment_file.hook_script.id
 }
+
+resource "proxmox_virtual_environment_firewall_options" "ct_firewall" {
+  for_each = { for ct in local.configs : ct.id => ct if ct.deploy && ct.firewall_enabled }
+
+  node_name    = each.value.target_node
+  container_id = proxmox_virtual_environment_container.ct[each.key].id
+
+  enabled       = true
+  dhcp          = true
+  input_policy  = "DROP"
+  output_policy = "DROP"
+  log_level_in  = "nolog"
+  ndp           = true
+  ipfilter      = false
+
+  depends_on = [
+    proxmox_virtual_environment_container.ct
+  ]
+}
+
+resource "proxmox_virtual_environment_firewall_rules" "inbound" {
+  for_each = { for ct in local.configs : ct.id => ct if ct.deploy && ct.firewall_enabled }
+  depends_on = [
+    proxmox_virtual_environment_container.ct
+  ]
+
+  node_name = each.value.target_node
+  container_id     = proxmox_virtual_environment_container.ct[each.key].id
+
+  dynamic "rule" {
+    for_each = try(each.value.fw_rules, null) == null ? [] : each.value.fw_rules
+    content {
+      security_group = rule.value.security_group
+      comment        = rule.value.comment
+      iface          = rule.value.iface
+      type           = rule.value.type
+      action         = rule.value.action
+      enabled        = rule.value.enabled
+      dest           = rule.value.dest
+      dport          = rule.value.dport
+      proto          = rule.value.proto
+      log            = rule.value.log
+      source         = rule.value.source
+      sport          = rule.value.sport
+      macro          = rule.value.macro
+    }
+  }
+
+  dynamic "rule" {
+    for_each = try(each.value.secgroups, null) == null ? [] : each.value.secgroups
+    content {
+      security_group = rule.value.security_group
+      comment        = rule.value.comment
+      iface          = rule.value.iface
+      enabled        = rule.value.enabled
+    }
+  }
+
+}
+
 
 # resource "proxmox_virtual_environment_file" "hook_script" {
 #   #provider     = proxmox.root

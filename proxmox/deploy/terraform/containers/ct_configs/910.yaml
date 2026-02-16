@@ -1,18 +1,25 @@
 ---
 id: "vpn"
-vm_id: 910
+replicas: 1
+vm_id: 911
 target_node: "pve"
 description: "Container managed by terraform: vpn entrypoint"
 tags: ["support", "network", "vpn", "terraform"]
 hostname: "vpn"
+firewall_enabled: true
 cpu:
   cores: 1
 memory:
   dedicated: 512
+secgroups:
+  - security_group: "test700"
+    comment: "From security group"
+    iface: "net0"
 network_interfaces:
   eth0:
     name: "eth0"
     bridge: "vmbr0"
+    firewall: true
 ipv4_configs:
   eth0:
     address: "192.168.1.201/24"
@@ -26,4 +33,4 @@ disks:
 unprivileged: true
 
 hook_script_file_id: ""
-deploy: false
+deploy: true

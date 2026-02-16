@@ -2,17 +2,18 @@ variable "vm_configs" {
   description = "List of VM configurations"
   default     = []
   type = list(object({
-    id          = string
-    replicas    = optional(number)
-    vm_id       = number
-    hostname    = string
-    domain      = string
-    bios        = optional(string, "seabios")
-    cpu_type    = optional(string, "x86-64-v2-AES")
-    cpu_cores   = number
-    cpu_sockets = number
-    memory      = number
-    vm_user     = string
+    id               = string
+    replicas         = optional(number)
+    vm_id            = number
+    hostname         = string
+    domain           = string
+    bios             = optional(string, "seabios")
+    cpu_type         = optional(string, "x86-64-v2-AES")
+    cpu_cores        = number
+    cpu_sockets      = number
+    memory           = number
+    vm_user          = string
+    firewall_enabled = optional(bool, false)
 
     startup = optional(object({
       order      = optional(string)
@@ -49,6 +50,7 @@ variable "vm_configs" {
       model     = optional(string, "virtio")
       addresses = string
       gateway4  = string
+      firewall  = optional(bool)
 
       routes = optional(list(object({
         to     = string
@@ -58,6 +60,27 @@ variable "vm_configs" {
         scope  = optional(string)
       })), [])
     }))
+    secgroups = optional(list(object({
+      enabled        = optional(bool)
+      comment        = optional(string)
+      security_group = optional(string)
+      iface          = optional(string)
+    })))
+    fw_rules = optional(list(object({
+      type           = optional(string)
+      action         = optional(string)
+      enabled        = optional(bool)
+      comment        = optional(string)
+      dest           = optional(string)
+      dport          = optional(string)
+      proto          = optional(string)
+      log            = optional(string)
+      iface          = optional(string)
+      source         = optional(string)
+      sport          = optional(string)
+      macro          = optional(string)
+      security_group = optional(string)
+    })))
     users = list(object({
       name                = string
       password            = string

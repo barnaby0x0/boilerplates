@@ -21,6 +21,6 @@ variable "vm_configs_dir" {
 
 variable "http_server_url" {
   description = "The http server ip"
-  type = string
-  default = "192.168.1.31:8080"
+  type        = string
+  default     = "192.168.1.31:8080"
 }

@@ -1,7 +1,7 @@
 ---
 id: "testmachinealpine"
 vm_id: 700
-replicas: 0
+replicas: 1
 template_id: "1000"
 hostname: "testmachinealpine"
 domain: "net.local"
@@ -18,11 +18,27 @@ onboot: true
 target_node: "pve"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
+firewall_enabled: true
+secgroups:
+  - security_group: "test700"
+    comment: "From security group"
+    iface: "net0"
+fw_rules:
+  - type: "in"
+    action: "ACCEPT"
+    comment: "Allow HTTP"
+    dest: "192.168.1.5"
+    dport: "80"
+    proto: "tcp"
+    log: "info"
+    enabled: true
+
 network_devices:
   eth0:
     bridge: "vmbr0"
     addresses: "192.168.1.197/24"
     gateway4: "192.168.1.1"
+    firewall: true
     routes:
       - to: "default"
         via: "192.168.1.1"
@@ -31,6 +47,7 @@ network_devices:
     bridge: "vnet01"
     addresses: "10.0.0.10/24"
     gateway4: "10.0.0.1"
+    firewall: true
     routes:
       - to: "default"
         via: "10.0.0.1"

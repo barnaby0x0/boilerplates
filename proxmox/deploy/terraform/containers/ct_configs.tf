@@ -11,6 +11,10 @@ module "config" {
   ct_configs = local.ct_configs
 }
 
+# output "expanded_ct_configs" {
+#   value = module.config.expanded_ct_configs
+# }
+
 locals {
   configs = module.config.ct_configs
 }
