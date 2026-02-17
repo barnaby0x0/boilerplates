@@ -9,8 +9,29 @@ resource "proxmox_virtual_environment_vm" "vm" {
   on_boot = each.value.onboot
   started = each.value.started
 
-  agent { enabled = true }
-  clone { vm_id = each.value.template_id }
+  dynamic "agent" {
+    for_each = each.value.agent ? [1] : []
+    content {
+      enabled = each.value.agent
+    }
+  }
+
+  dynamic "clone" {
+    for_each = each.value.template_id != null ? [1] : []
+    content {
+      vm_id = each.value.template_id
+    }
+  }
+
+  bios        = each.value.bios
+  boot_order = each.value.boot_order
+
+  dynamic "cdrom" {
+    for_each = each.value.cdrom != null ? [each.value.cdrom] : []
+    content {
+      file_id = cdrom.value.file_id
+    }
+  }
 
   tags = each.value.vm_tags
   cpu {
@@ -31,15 +52,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
     }
   }
 
-  # dynamic "network_device" {
-  #   for_each = each.value.bridges
-  #   content {
-  #     #bridge = each.value.bridge
-  #     bridge = network_device.value
-  #     model  = "virtio"
-  #   }
-  # }
-
   lifecycle {
     ignore_changes = [
       network_device,
@@ -48,14 +60,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   # boot_order    = ["scsi0"]
   scsi_hardware = "virtio-scsi-single"
-
-  # disk {
-  #   interface    = "virtio0"
-  #   iothread     = true
-  #   datastore_id = each.value.disk.storage
-  #   size         = each.value.disk.size
-  #   discard      = "ignore"
-  # }
 
   dynamic "disk" {
     for_each = each.value.disks
@@ -78,13 +82,15 @@ resource "proxmox_virtual_environment_vm" "vm" {
     }
   }
 
-  initialization {
-    datastore_id      = "local-lvm"
-    interface         = "ide2"
-    user_data_file_id = proxmox_virtual_environment_file.cloud_user_config[each.key].id
-    #user_data_file_id    = proxmox_virtual_environment_file.cloud_user_config.id
-    meta_data_file_id    = proxmox_virtual_environment_file.cloud_meta_config[each.key].id
-    network_data_file_id = proxmox_virtual_environment_file.cloud_network_config[each.key].id
+  dynamic "initialization" {
+    for_each = each.value.enable_cloud_init ? [1] : []
+    content {
+      datastore_id      = "local-lvm"
+      interface         = "ide2"
+      user_data_file_id = proxmox_virtual_environment_file.cloud_user_config[each.key].id
+      meta_data_file_id    = proxmox_virtual_environment_file.cloud_meta_config[each.key].id
+      network_data_file_id = proxmox_virtual_environment_file.cloud_network_config[each.key].id
+    }
   }
 }
 
@@ -119,11 +125,11 @@ resource "proxmox_virtual_environment_firewall_rules" "inbound" {
   dynamic "rule" {
     for_each = try(each.value.fw_rules, null) == null ? [] : each.value.fw_rules
     content {
-      security_group = rule.value.security_group
-      comment        = rule.value.comment
-      iface          = rule.value.iface
-      type           = rule.value.type
-      action         = rule.value.action
+      # security_group = rule.value.security_group
+      comment = rule.value.comment
+      iface   = rule.value.iface
+      type    = rule.value.type
+      action  = rule.value.action
       # action  = try(rule.value.action, null) == null ? null : rule.value.action
       enabled = rule.value.enabled
       dest    = rule.value.dest

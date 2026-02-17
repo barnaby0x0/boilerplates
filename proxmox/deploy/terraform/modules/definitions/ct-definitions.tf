@@ -15,7 +15,7 @@ variable "ct_configs" {
       comment        = optional(string)
       security_group = optional(string)
       iface          = optional(string)
-    })))    
+    })))
     fw_rules = optional(list(object({
       type           = optional(string)
       action         = optional(string)

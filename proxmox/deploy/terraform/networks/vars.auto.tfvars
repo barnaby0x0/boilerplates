@@ -35,3 +35,119 @@ subnets = [
   #   gateway = "10.12.0.1"
   # }
 ]
+
+security_groups = [
+  {
+    name    = "gitlab-runners"
+    comment = "Managed by Terraform"
+    rules = [
+      {
+        type    = "out"
+        action  = "DROP"
+        comment = "Block all local network"
+        dest    = "192.168.1.0/24"
+        log     = "nolog"
+      },
+      {
+        type    = "out"
+        action  = "ACCEPT"
+        comment = "Allow all external"
+        log     = "nolog"
+      },
+      {
+        type    = "in"
+        action  = "ACCEPT"
+        macro   = "SSH"
+        comment = "Allow ssh from rpi router"
+        source  = "router-rpi"
+        log     = "nolog"
+      }
+    ]
+  },
+  {
+    name    = "test700"
+    comment = "Managed by Terraform"
+    rules = [
+      {
+        type    = "out"
+        action  = "ACCEPT"
+        comment = "Allow HTTP SERVER"
+        dest    = "192.168.1.29"
+        dport   = "8080"
+        proto   = "tcp"
+        log     = "nolog"
+      },
+      {
+        type    = "out"
+        action  = "DROP"
+        comment = "Block all local network"
+        dest    = "192.168.1.0/24"
+        log     = "nolog"
+      },
+      {
+        type    = "out"
+        action  = "ACCEPT"
+        comment = "Allow all external"
+        log     = "nolog"
+      },
+      {
+        type    = "in"
+        action  = "ACCEPT"
+        macro   = "SSH"
+        comment = "Allow ssh from rpi router"
+        source  = "router-rpi"
+        log     = "nolog"
+      }
+    ]
+  },
+  {
+    name    = "capgemini"
+    comment = "Managed by Terraform"
+    rules = [
+      {
+        type    = "out"
+        action  = "DROP"
+        comment = "Block all local network"
+        dest    = "192.168.1.0/24"
+        log     = "nolog"
+      },
+      {
+        type    = "out"
+        action  = "ACCEPT"
+        comment = "Allow all external"
+        log     = "nolog"
+      },
+      {
+        type    = "in"
+        action  = "ACCEPT"
+        macro   = "SSH"
+        comment = "Allow ssh from rpi router"
+        source  = "router-rpi"
+        log     = "nolog"
+      }
+    ]
+  }
+  # {
+  #   name    = "dhcp"
+  #   comment = "Managed by Terraform"
+  #   rules = [
+  #     {
+  #       type    = "in"
+  #       action  = "ACCEPT"
+  #       comment = "Allow dhcp upd ports"
+  #       proto = "udp"
+  #       dport = "67,68"
+  #       log     = "nolog"
+  #     },
+  #           {
+  #       type    = "in"
+  #       action  = "ACCEPT"
+  #       comment = "Allow dhcp upd ports"
+  #       proto = "udp"
+  #       sport = "68"
+  #       dport = "67"
+  #       log     = "nolog"
+  #     }
+  #   ]
+  # }
+]

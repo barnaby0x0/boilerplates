@@ -18,20 +18,20 @@ onboot: true
 target_node: "pve"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
-firewall_enabled: true
-secgroups:
-  - security_group: "test700"
-    comment: "From security group"
-    iface: "net0"
-fw_rules:
-  - type: "in"
-    action: "ACCEPT"
-    comment: "Allow HTTP"
-    dest: "192.168.1.5"
-    dport: "80"
-    proto: "tcp"
-    log: "info"
-    enabled: true
+# firewall_enabled: true
+# secgroups:
+#   - security_group: "test700"
+#     comment: "From security group"
+#     iface: "net0"
+# fw_rules:
+#   - type: "in"
+#     action: "ACCEPT"
+#     comment: "Allow HTTP"
+#     dest: "192.168.1.5"
+#     dport: "80"
+#     proto: "tcp"
+#     log: "info"
+#     enabled: false
 
 network_devices:
   eth0:
@@ -45,9 +45,10 @@ network_devices:
         metric: "10"
   eth1:
     bridge: "vnet01"
-    addresses: "10.0.0.10/24"
+    addresses: "10.0.0.34/24"
     gateway4: "10.0.0.1"
     firewall: true
+    dhcp: true
     routes:
       - to: "default"
         via: "10.0.0.1"
@@ -66,4 +67,4 @@ cmds: [
   "usermod -aG docker user",
   "wget http://${http_server_url}/files/immich/init.sh"
 ]
-deploy: true
+deploy: false

@@ -31,3 +31,27 @@ variable "subnets" {
     gateway = string
   }))
 }
+
+variable "security_groups" {
+  description = "List of Security groups"
+  type = list(object({
+    name    = string
+    comment = optional(string)
+    deploy  = optional(bool, true)
+    rules = list(object({
+      action         = optional(string)
+      comment        = optional(string)
+      dest           = optional(string)
+      dport          = optional(string)
+      enabled        = optional(bool)
+      iface          = optional(string)
+      log            = optional(string)
+      macro          = optional(string)
+      proto          = optional(string)
+      security_group = optional(string)
+      source         = optional(string)
+      sport          = optional(string)
+      type           = optional(string)
+    }))
+  }))
+}

@@ -25,11 +25,17 @@ onboot: false
 target_node: "pve"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
+firewall_enabled: true
+secgroups:
+  - security_group: "gitlab-runners"
+    comment: "From security group"
+    iface: "net0"
 network_devices:
   ens18:
     bridge: "vnet01"
     addresses: "10.0.0.22/24"
     gateway4: "10.0.0.1"
+    firewall: true
     routes:
       - to: "default"
         via: "10.0.0.1"
