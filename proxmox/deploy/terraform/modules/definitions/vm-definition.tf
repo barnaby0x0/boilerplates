@@ -22,7 +22,12 @@ variable "vm_configs" {
       up_delay   = optional(string)
       down_delay = optional(string)
     }))
-
+    efi_disk = optional(object({
+      datastore_id      = optional(string, "local-lvm")
+      file_format       = optional(string, "raw")
+      type              = optional(string, "4m")
+      pre_enrolled_keys = optional(bool, false)
+    }))
     disks = optional(map(object({
       interface = string
       storage   = string
@@ -48,11 +53,11 @@ variable "vm_configs" {
     onboot             = bool
     target_node        = string
     target_node_domain = string
-    dns_servers        = list(string)
+    dns_servers        = optional(list(string))
     network_devices = optional(map(object({
       bridge    = string
       model     = optional(string, "virtio")
-      dhcp = optional(bool, false)
+      dhcp      = optional(bool, false)
       addresses = optional(string)
       gateway4  = optional(string)
       firewall  = optional(bool)
@@ -99,6 +104,7 @@ variable "vm_configs" {
       path        = string
       permissions = string
       content     = string
+      owner       = optional(string)
     })))
     cmds              = list(string)
     enable_cloud_init = optional(bool, true)

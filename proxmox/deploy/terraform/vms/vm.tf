@@ -23,7 +23,16 @@ resource "proxmox_virtual_environment_vm" "vm" {
     }
   }
 
-  bios        = each.value.bios
+  bios = each.value.bios
+  dynamic "efi_disk" {
+    for_each = each.value.efi_disk != null ? [each.value.efi_disk] : []
+    content {
+      datastore_id      = efi_disk.value.datastore_id
+      file_format       = efi_disk.value.file_format
+      type              = efi_disk.value.type
+      pre_enrolled_keys = efi_disk.value.pre_enrolled_keys
+    }
+  }
   boot_order = each.value.boot_order
 
   dynamic "cdrom" {
@@ -85,9 +94,9 @@ resource "proxmox_virtual_environment_vm" "vm" {
   dynamic "initialization" {
     for_each = each.value.enable_cloud_init ? [1] : []
     content {
-      datastore_id      = "local-lvm"
-      interface         = "ide2"
-      user_data_file_id = proxmox_virtual_environment_file.cloud_user_config[each.key].id
+      datastore_id         = "local-lvm"
+      interface            = "ide2"
+      user_data_file_id    = proxmox_virtual_environment_file.cloud_user_config[each.key].id
       meta_data_file_id    = proxmox_virtual_environment_file.cloud_meta_config[each.key].id
       network_data_file_id = proxmox_virtual_environment_file.cloud_network_config[each.key].id
     }

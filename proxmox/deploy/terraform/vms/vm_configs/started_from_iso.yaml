@@ -1,0 +1,55 @@
+---
+id: "runner_nixos"
+vm_id: 320
+replicas: 1
+hostname: "runner-nixos"
+domain: "net.local"
+cpu_type: "x86-64-v2-AES"
+cpu_cores: 4
+cpu_sockets: 1
+bios: "ovmf"
+boot_order:
+  # - "ide3"
+  - "virtio0"
+  - "net0"
+  
+agent: true
+cdrom:
+  file_id: "local:iso/nixos-25.11.5581.23d72dabcb3b-x86_64-linux.iso"
+memory: 4096
+vm_user: "sysadmin"
+disks: {}
+vm_tags: ["runner", "nixos", "terraform"]
+started: true
+onboot: false
+target_node: "pve"
+target_node_domain: ""
+firewall_enabled: true
+fw_rules:
+  - type: "in"
+    action: "ACCEPT"
+    macro: "SSH"
+    comment: "SSH local"
+    log: "nolog"
+    interface: "net0"
+    enabled: true
+  - type: "out"
+    action: "ACCEPT"
+    log: "nolog"
+    enabled: true    
+network_devices:
+  ens18:
+    bridge: "vnet01"
+    firewall: false
+disks:    
+  disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 25
+    iothread: true
+    discard: "ignore"                
+users: []
+files: []
+cmds: []
+enable_cloud_init: false
+deploy: false

@@ -1,25 +1,33 @@
 ---
 id: "runner_nixos"
 vm_id: 320
-replicas: 1
+template_id: "1020"
 hostname: "runner-nixos"
 domain: "net.local"
 cpu_type: "x86-64-v2-AES"
 cpu_cores: 4
 cpu_sockets: 1
-bios: "ovmf"
-boot_order:
-  # - "ide3"
-  - "virtio0"
-  - "net0"
-  
-agent: true
-cdrom:
-  file_id: "local:iso/nixos-25.11.5581.23d72dabcb3b-x86_64-linux.iso"
 memory: 4096
 vm_user: "sysadmin"
-disks: {}
-vm_tags: ["runner", "nixos", "terraform"]
+bios: "ovmf"
+startup:
+  order: "1"
+boot_order:
+  - "virtio0"
+disks:
+  disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 25
+    iothread: true
+    discard: "ignore"    
+efi_disk:
+  datastore_id: "local-lvm"
+  file_format: "raw"
+  type: "4m"
+  pre_enrolled_keys: false   
+vm_tags: ["runner", "gitlab", "nixos", "terraform", "automation"]
+template_tag: "router"
 started: true
 onboot: false
 target_node: "pve"
@@ -27,39 +35,45 @@ target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
 firewall_enabled: true
 secgroups:
-  # - security_group: "test700"
-  #   comment: "From security group"
-  #   iface: "net0"
+  - security_group: "gitlab-runners"
+    comment: "From security group"
+    iface: "net0"
 fw_rules:
   - type: "in"
     action: "ACCEPT"
-    comment: "Allow HTTP"
-    log: "info"
-    enabled: true
-  - type: "out"
-    action: "ACCEPT"
-    comment: "Allow HTTP"
+    comment: "Allow SSH From nixos installer"
+    source: "10.0.0.12"
+    dport: "22"
+    proto: "tcp"
     log: "info"
     enabled: true    
 network_devices:
   ens18:
     bridge: "vnet01"
-    # addresses: "10.0.0.30/24"
-    # gateway4: "10.0.0.1"
-    firewall: false
-    # routes:
-    #   - to: "default"
-    #     via: "10.0.0.1"
-    #     metric: "10"
-disks:    
-  disk0:
-    interface: "virtio0"
-    storage: "local-lvm"
-    size: 25
-    iothread: true
-    discard: "ignore"                
-users: []
-files: []
+    addresses: "10.0.0.23/24"
+    gateway4: "10.0.0.1"
+    firewall: true
+    routes:
+      - to: "default"
+        via: "10.0.0.1"
+        metric: "10"          
+users:
+  - name: "user"
+    password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
+    groups: "[adm, sudo]"
+    lock_passwd: "false"
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: "/bin/bash"
+    ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
+
+files:
+  - path: "/home/user/.secrets/ci-env-auth"
+    permissions: "0600"
+    owner: "user:user"
+    content: |
+      CI_SERVER_URL=https://gitlab.com
+      CI_SERVER_TOKEN=glrt-5pmmPm_FnMG3-oXd_tLw82c6MTlmaDZ3Cm86MQp0OjIKdToyZ2lzZhg.01.1j1t6q2g4
+
 cmds: []
-enable_cloud_init: false
+
 deploy: true

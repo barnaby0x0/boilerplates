@@ -83,6 +83,7 @@ security_groups = [
         comment = "Block all local network"
         dest    = "192.168.1.0/24"
         log     = "nolog"
+        enabled = true
       },
       {
         type    = "out"
@@ -97,7 +98,15 @@ security_groups = [
         comment = "Allow ssh from rpi router"
         source  = "router-rpi"
         log     = "nolog"
-      }
+      },
+      {
+        type    = "in"
+        action  = "ACCEPT"
+        macro   = "Ping"
+        comment = "Allow ping from rpi router"
+        source  = "router-rpi"
+        log     = "nolog"
+      }      
     ]
   },
   {

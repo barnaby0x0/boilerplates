@@ -25,6 +25,9 @@ write_files:
 %{ for file in files ~}
   - path: ${file.path}
     permissions: ${file.permissions}
+%{ if file.owner != null && file.owner != "" ~}
+    owner: ${file.owner}
+%{ endif ~}    
     content: |
       ${indent(6, file.content)}
 
