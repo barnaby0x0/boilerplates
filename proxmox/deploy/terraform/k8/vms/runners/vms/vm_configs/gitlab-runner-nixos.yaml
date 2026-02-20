@@ -18,7 +18,7 @@ disks:
   disk0:
     interface: "virtio0"
     storage: "local-lvm"
-    size: 25
+    size: 10
     iothread: true
     discard: "ignore"    
 efi_disk:
@@ -29,15 +29,15 @@ efi_disk:
 vm_tags: ["runner", "gitlab", "nixos", "terraform", "automation"]
 template_tag: "router"
 started: true
-onboot: false
-target_node: "pve"
+onboot: true
+target_node: "k8"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
 firewall_enabled: true
-secgroups:
-  - security_group: "gitlab-runners"
-    comment: "From security group"
-    iface: "net0"
+# secgroups:
+#   - security_group: "gitlab-runners"
+#     comment: "From security group"
+#     iface: "net0"
 fw_rules:
   - type: "in"
     action: "ACCEPT"
@@ -50,15 +50,15 @@ fw_rules:
 network_devices:
   ens18:
     bridge: "vnet01"
-    addresses: "10.0.0.23/24"
-    gateway4: "10.0.0.1"
+    addresses: "10.11.0.20/24"
+    gateway4: "10.11.0.1"
     firewall: true
     routes:
       - to: "0.0.0.0/0"
-        via: "10.0.0.1"
+        via: "10.11.0.1"
         metric: "1"          
 # users:
-#   - name: "user"
+#   - name: "victor"
 #     password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
 #     groups: "[adm, sudo]"
 #     lock_passwd: "false"
@@ -75,43 +75,43 @@ files:
       CI_SERVER_URL=https://gitlab.com
       CI_SERVER_TOKEN=glrt-5pmmPm_FnMG3-oXd_tLw82c6MTlmaDZ3Cm86MQp0OjIKdToyZ2lzZhg.01.1j1t6q2g4
    
-  #- path: "/tmp/net.sh"
-  #  permissions: "0700"
-  #  owner: "user:users"
-  #  content: |
-  #    set -euo pipefail
-  #    
-  #    # Attendre que l'interface soit up
-  #    until ip link show ens18 &>/dev/null; do sleep 1; done
-  #    
-  #    # Supprimer toute config existante (DHCP ou autre)
-  #    ip addr flush dev ens18
-  #    ip route flush dev ens18
-  #    
-  #    # Appliquer la config statique
-  #    ip addr add 10.0.0.24/24 dev ens18
-  #    ip link set ens18 up
-  #    ip route add default via 10.0.0.1 dev ens18 metric 10
-  #    
-  #    # DNS
-  #    echo "nameserver 8.8.8.8" > /etc/resolv.conf
-  #    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
-  #    
-  #    # Persister pour reboot (NixOS systemd-networkd)
-  #    mkdir -p /etc/systemd/network
-  #    cat > /etc/systemd/network/20-ens18.network << EOF
-  #    [Match]
-  #    Name=ens18
-  #    
-  #    [Network]
-  #    Address=10.0.0.23/24
-  #    Gateway=10.0.0.1
-  #    DNS=8.8.8.8 8.8.4.4
-  #    
-  #    [Route]
-  #    Gateway=10.0.0.1
-  #    Metric=10
-  #    EOF
+  # - path: "/tmp/net.sh"
+  #   permissions: "0700"
+  #   owner: "user:users"
+  #   content: |
+  #     set -euo pipefail
+      
+  #     # Attendre que l'interface soit up
+  #     until ip link show ens18 &>/dev/null; do sleep 1; done
+      
+  #     # Supprimer toute config existante (DHCP ou autre)
+  #     ip addr flush dev ens18
+  #     ip route flush dev ens18
+      
+  #     # Appliquer la config statique
+  #     ip addr add 10.0.0.24/24 dev ens18
+  #     ip link set ens18 up
+  #     ip route add default via 10.0.0.1 dev ens18 metric 10
+      
+  #     # DNS
+  #     echo "nameserver 8.8.8.8" > /etc/resolv.conf
+  #     echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+      
+  #     # Persister pour reboot (NixOS systemd-networkd)
+  #     mkdir -p /etc/systemd/network
+  #     cat > /etc/systemd/network/20-ens18.network << EOF
+  #     [Match]
+  #     Name=ens18
+      
+  #     [Network]
+  #     Address=10.0.0.23/24
+  #     Gateway=10.0.0.1
+  #     DNS=8.8.8.8 8.8.4.4
+      
+  #     [Route]
+  #     Gateway=10.0.0.1
+  #     Metric=10
+  #     EOF
 
 cmds:
   - "echo Hello > /tmp/test"
