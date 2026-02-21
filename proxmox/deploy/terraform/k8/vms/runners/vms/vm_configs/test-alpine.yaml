@@ -1,7 +1,7 @@
 ---
 id: "testmachinealpine"
 vm_id: 700
-replicas: 0
+replicas: 1
 template_id: "1000"
 hostname: "testmachinealpine"
 domain: "net.local"

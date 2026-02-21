@@ -8,8 +8,10 @@ terraform {
 }
 
 provider "proxmox" {
-  endpoint  = var.proxmox_connection.proxmox_url
-  api_token = var.proxmox_connection.api_token
+  # endpoint  = var.proxmox_connection.proxmox_url
+  # api_token = var.proxmox_connection.api_token
+  endpoint  = var.proxmox_url
+  api_token = var.api_token
   insecure  = true
   ssh {
     agent       = false

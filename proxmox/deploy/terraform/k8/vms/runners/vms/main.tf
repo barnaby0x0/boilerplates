@@ -22,9 +22,11 @@ locals {
 
 module "vms" {
   source = "../../../../modules/vms"
-  proxmox_connection = var.proxmox_connection
+  # proxmox_connection = var.proxmox_connection
+  proxmox_url    = var.proxmox_url
+  api_token      = var.api_token
   vm_definitions = local.vm_configs
-  target_node = "k8"
+  target_node    = "k8"
 }
 
 # output "name" {

@@ -1,10 +1,18 @@
 # Proxmox connection object
-variable "proxmox_connection" {
-  description = "Proxmox connection info (url, token)"
-  type = object({
-    proxmox_url = string
-    api_token   = string
-  })
+# variable "proxmox_connection" {
+#   description = "Proxmox connection info (url, token)"
+#   type = object({
+#     proxmox_url = string
+#     api_token   = string
+#   })
+# }
+
+variable "proxmox_url" {
+  type = string
+}
+
+variable "api_token" {
+  type = string
 }
 
 variable "target_node" {
