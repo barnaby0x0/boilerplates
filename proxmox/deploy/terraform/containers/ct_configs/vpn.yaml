@@ -6,7 +6,7 @@ target_node: "pve"
 description: "Container managed by terraform: vpn entrypoint"
 tags: ["support", "network", "vpn", "terraform"]
 hostname: "vpn"
-firewall_enabled: true
+firewall_enabled: false
 cpu:
   cores: 1
 memory:
@@ -18,17 +18,17 @@ secgroups:
 network_interfaces:
   eth0:
     name: "eth0"
-    bridge: "vmbr0"
+    bridge: "vnet01"
     firewall: true
 ipv4_configs:
   eth0:
-    address: "192.168.1.201/24"
-    gateway: "192.168.1.1"
+    address: "10.0.0.201/24"
+    gateway: "10.0.0.1"
 
 disks:
   disk0:
     datastore_id: "local-lvm"
-    size: 4
+    size: 6
 
 unprivileged: true
 

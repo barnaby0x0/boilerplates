@@ -29,3 +29,15 @@ echo
 echo "Installation terminée."
 echo "Redémarre la machine puis sélectionne la session XFCE à l'écran de connexion gdm3."
  ```
+
+## Load secrets from Vault
+
+```bash 
+while IFS=':' read -r e k v; do eval "export $e=\"\$(vault kv get -field=$k $v)\""; done < .env
+```
+.env file has the format as bellow
+
+```bash
+env_var_name:secret_key:secret_path
+exemple: TF_VAR_test:test:secret/terraform/test
+```

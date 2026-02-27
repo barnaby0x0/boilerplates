@@ -1,0 +1,68 @@
+---
+id: "test_nixos"
+vm_id: 720
+replicas: 1
+template_id: "1020"
+hostname: "test-nixos"
+domain: "net.local"
+cpu_type: "x86-64-v2-AES"
+cpu_cores: 2
+cpu_sockets: 1
+memory: 1024
+vm_user: "sysadmin"
+bios: "ovmf"
+startup:
+  order: "1"
+boot_order:
+  - "virtio0"
+disks:
+  disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 25
+    iothread: true
+    discard: "ignore"    
+efi_disk:
+  datastore_id: "local-lvm"
+  file_format: "raw"
+  type: "4m"
+  pre_enrolled_keys: false   
+vm_tags: ["test", "nixos", "terraform", "automation"]
+template_tag: "router"
+started: true
+onboot: false
+target_node: "pve"
+target_node_domain: ""
+dns_servers: ["8.8.8.8", "8.8.4.4"]
+firewall_enabled: false
+# secgroups:
+#   - security_group: "gitlab-runners"
+#     comment: "From security group"
+#     iface: "net0"
+# fw_rules:
+#   - type: "in"
+#     action: "ACCEPT"
+#     comment: "Allow SSH From nixos installer"
+#     source: "10.0.0.12"
+#     dport: "22"
+#     proto: "tcp"
+#     log: "info"
+#     enabled: true    
+network_devices:
+  ens18:
+    bridge: "vnet01"
+    addresses: "10.0.0.70/24"
+    gateway4: "10.0.0.1"
+    firewall: true
+    routes:
+      - to: "0.0.0.0/0"
+        via: "10.0.0.1"
+        metric: "1"          
+users: []
+files: []
+
+cmds:
+  - "nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs"
+  - "nix-channel --update nixpkgs"
+
+deploy: false

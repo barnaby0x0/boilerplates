@@ -106,7 +106,17 @@ variable "vm_configs" {
       content     = string
       owner       = optional(string)
     })))
-    cmds              = list(string)
+    external_files = optional(list(string))
+    cmds           = list(string)
+    cloudinit_templates = optional(object({
+      user_data_path = optional(string, "cloud-init/user_data")
+      network_path   = optional(string, "cloud-init/network_data")
+      meta_data      = optional(string, "cloud-init/meta_data")
+      }), {
+      user_data_path = "cloud-init/user_data"
+      network_path   = "cloud-init/network_data"
+      meta_data      = "cloud-init/meta_data"
+    })
     enable_cloud_init = optional(bool, true)
     deploy            = bool
   }))

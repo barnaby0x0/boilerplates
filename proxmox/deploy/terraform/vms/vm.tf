@@ -1,5 +1,4 @@
 resource "proxmox_virtual_environment_vm" "vm" {
-  #for_each = { for vm in var.vm_configs : vm.id => vm if vm.deploy }
   for_each = { for vm in local.configs : vm.id => vm if vm.deploy }
 
   vm_id     = each.value.vm_id
@@ -67,7 +66,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
     ]
   }
 
-  # boot_order    = ["scsi0"]
   scsi_hardware = "virtio-scsi-single"
 
   dynamic "disk" {

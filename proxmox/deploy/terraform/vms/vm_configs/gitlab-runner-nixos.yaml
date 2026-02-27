@@ -33,7 +33,7 @@ onboot: false
 target_node: "pve"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
-firewall_enabled: true
+firewall_enabled: false
 secgroups:
   - security_group: "gitlab-runners"
     comment: "From security group"
@@ -74,48 +74,11 @@ files:
     content: |
       CI_SERVER_URL=https://gitlab.com
       CI_SERVER_TOKEN=glrt-5pmmPm_FnMG3-oXd_tLw82c6MTlmaDZ3Cm86MQp0OjIKdToyZ2lzZhg.01.1j1t6q2g4
-   
-  #- path: "/tmp/net.sh"
-  #  permissions: "0700"
-  #  owner: "user:users"
-  #  content: |
-  #    set -euo pipefail
-  #    
-  #    # Attendre que l'interface soit up
-  #    until ip link show ens18 &>/dev/null; do sleep 1; done
-  #    
-  #    # Supprimer toute config existante (DHCP ou autre)
-  #    ip addr flush dev ens18
-  #    ip route flush dev ens18
-  #    
-  #    # Appliquer la config statique
-  #    ip addr add 10.0.0.24/24 dev ens18
-  #    ip link set ens18 up
-  #    ip route add default via 10.0.0.1 dev ens18 metric 10
-  #    
-  #    # DNS
-  #    echo "nameserver 8.8.8.8" > /etc/resolv.conf
-  #    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
-  #    
-  #    # Persister pour reboot (NixOS systemd-networkd)
-  #    mkdir -p /etc/systemd/network
-  #    cat > /etc/systemd/network/20-ens18.network << EOF
-  #    [Match]
-  #    Name=ens18
-  #    
-  #    [Network]
-  #    Address=10.0.0.23/24
-  #    Gateway=10.0.0.1
-  #    DNS=8.8.8.8 8.8.4.4
-  #    
-  #    [Route]
-  #    Gateway=10.0.0.1
-  #    Metric=10
-  #    EOF
 
 cmds:
   - "echo Hello > /tmp/test"
-  - "nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs"
-  - "nix-channel --update nixpkgs"
+  # - "nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs"
+  # - "nix-channel --update nixpkgs"
+  - "/run/current-system/sw/bin/docker --version"
 
 deploy: true

@@ -5,10 +5,11 @@ resource "proxmox_virtual_environment_file" "cloud_user_config" {
   node_name    = var.target_node
 
   source_raw {
-    data = templatefile("cloud-init/user_data", {
-      users = each.value.users
-      files = each.value.files
-      cmds  = each.value.cmds
+    data = templatefile(each.value.cloudinit_templates.user_data_path, {
+      users    = each.value.users
+      files    = each.value.files
+      cmds     = each.value.cmds
+      hostname = coalesce(each.value.hostname, null)
     })
     file_name = "${each.value.hostname}-ci-user.yml"
   }
@@ -20,13 +21,9 @@ resource "proxmox_virtual_environment_file" "cloud_network_config" {
   content_type = "snippets"
   datastore_id = "snippets"
   node_name    = var.target_node
-  #source_raw {
-  #  data      = file("cloud-init/network_data")
-  #  file_name = "${var.vm_hostname}-ci-network.yml"
-  #}
 
   source_raw {
-    data = templatefile("cloud-init/network_data", {
+    data = templatefile(each.value.cloudinit_templates.network_path, {
       nics        = each.value.network_devices
       dns_servers = format("[%s]", join(", ", [for s in each.value.dns_servers : "\"${s}\""]))
     })
@@ -35,29 +32,16 @@ resource "proxmox_virtual_environment_file" "cloud_network_config" {
 
 }
 
-# resource "proxmox_virtual_environment_file" "cloud_network_config" {
-#   content_type = "snippets"
-#   datastore_id = "snippets"
-#   node_name    = var.target_node
-#   source_raw {
-#     data = templatefile("cloud-init/network_data", {
-#       ADDRESSES = join(", ", each.value.addresses)
-#     })
-#     file_name = "${var.vm_hostname}-ci-network.yml"
-#   }
-# }
-
 resource "proxmox_virtual_environment_file" "cloud_meta_config" {
   for_each     = { for vm in local.configs : vm.id => vm if vm.deploy && vm.enable_cloud_init }
   content_type = "snippets"
-  datastore_id = "snippets" # Utiliser le stockage dédié
+  datastore_id = "snippets"
   node_name    = var.target_node
 
   source_raw {
-    data = templatefile("cloud-init/meta_data",
-      {
-        instance_id    = sha1(each.value.hostname)
-        local_hostname = each.value.hostname
+    data = templatefile(each.value.cloudinit_templates.meta_data, {
+      instance_id    = sha1(each.value.hostname)
+      local_hostname = each.value.hostname
       }
     )
 

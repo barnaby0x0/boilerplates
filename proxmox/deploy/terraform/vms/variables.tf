@@ -1,12 +1,3 @@
-# Proxmox connection object
-#variable "proxmox_connection" {
-#  description = "Proxmox connection info (url, token)"
-#  type = object({
-#    proxmox_url = string
-#    api_token   = string
-#  })
-#}
-
 variable "proxmox_url" { type = string }
 variable "api_token" { type = string }
 
@@ -26,4 +17,16 @@ variable "http_server_url" {
   description = "The http server ip"
   type        = string
   default     = "192.168.1.31:8080"
+}
+
+variable "test" {
+  type    = string
+  default = <<-EOT
+{
+  "insecure-registries": [
+    "10.0.0.250:5000"
+  ],
+  "registry-mirrors": ["http://10.0.0.250:5001"]
+}
+EOT
 }

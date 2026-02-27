@@ -43,6 +43,13 @@ security_groups = [
     rules = [
       {
         type    = "out"
+        action  = "ACCEPT"
+        comment = "Accept pve node"
+        dest    = "192.168.1.100/32"
+        log     = "nolog"
+      },
+      {
+        type    = "out"
         action  = "DROP"
         comment = "Block all local network"
         dest    = "192.168.1.0/24"

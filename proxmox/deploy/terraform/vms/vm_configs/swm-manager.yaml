@@ -1,0 +1,74 @@
+---
+id: "swarm_manager"
+vm_id: 600
+replicas: 1
+template_id: "1000"
+hostname: "swarm-manager"
+domain: "net.local"
+cpu_type: "x86-64-v2-AES"
+cpu_cores: 2
+cpu_sockets: 1
+memory: 1024
+vm_user: "sysadmin"
+disks:
+  disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 15
+    iothread: true
+    discard: "ignore"  
+vm_tags: ["swarm", "alpine", "terraform"]
+template_tag: "swarm_manager"
+started: true
+onboot: true
+target_node: "pve"
+target_node_domain: ""
+dns_servers: ["8.8.8.8", "8.8.4.4"]
+firewall_enabled: false
+# secgroups:
+#   - security_group: "test700"
+#     comment: "From security group"
+#     iface: "net0"
+# fw_rules:
+#   - type: "in"
+#     action: "ACCEPT"
+#     comment: "Allow HTTP"
+#     dest: "192.168.1.5"
+#     dport: "80"
+#     proto: "tcp"
+#     log: "info"
+#     enabled: false
+
+network_devices:
+  eth0:
+    bridge: "vnet01"
+    addresses: "10.0.0.80/24"
+    gateway4: "10.0.0.1"
+    firewall: false
+    dhcp: false
+    routes:
+      - to: "default"
+        via: "10.0.0.1"
+        metric: "1"
+users:
+  - name: "user"
+    password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
+    groups: "[adm, sudo]"
+    lock_passwd: "false"
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: "/bin/bash"
+    ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
+
+files: []
+
+cmds: [
+  "usermod -aG docker user",
+  "apk add curl tcpdump netcat-openbsd vim",
+  "sudo -H -u user bash -c 'docker swarm init --default-addr-pool 10.20.0.0/16 --default-addr-pool-mask-length 24'", # Be carefull to do not choice the same ingress CIDR than real one
+  "sudo -H -u user bash -c 'curl -L https://downloads.portainer.io/ce-lts/portainer-agent-stack.yml -o /home/user/portainer-agent-stack.yml'",
+  "sudo -H -u user bash -c 'docker stack deploy -c /home/user/portainer-agent-stack.yml portainer'",
+  "sudo -H -u user bash -c 'docker swarm join-token -q worker'"
+]
+cloudinit_templates:
+  user_data_path: "cloud-init/user_data_hostname"
+deploy: true

@@ -31,18 +31,15 @@ network_devices:
     bridge: "vmbr0"
     addresses: "192.168.1.114/24"
     gateway4: "192.168.1.1"
-    routes:
-      - to: "default"
-        via: "192.168.1.1"
-        metric: "10"
+    routes: []
   eth1:
-    bridge: "vmbr0"
+    bridge: "vnet01"
     addresses: "10.0.0.100/24"
     gateway4: "10.0.0.1"
-    routes:
-      - to: "default"
-        via: "10.0.0.1"
-        metric: "10"        
+    # routes:
+    #   - to: "10.0.0.0/24"
+    #     via: "10.0.0.1"
+    #     metric: "1"       
 users:
   - name: "user"
     password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"

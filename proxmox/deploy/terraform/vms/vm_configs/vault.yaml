@@ -1,0 +1,149 @@
+---
+id: "vault"
+vm_id: 915
+replicas: 1
+template_id: "1000"
+hostname: "vault"
+domain: "net.local"
+cpu_type: "x86-64-v2-AES"
+cpu_cores: 2
+cpu_sockets: 1
+memory: 1024
+vm_user: "sysadmin"
+disks:
+  disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 20
+    iothread: true
+    discard: "ignore"  
+vm_tags: ["vault","alpine", "terraform"]
+template_tag: "vault"
+started: true
+onboot: true
+target_node: "pve"
+target_node_domain: ""
+dns_servers: ["8.8.8.8", "8.8.4.4"]
+firewall_enabled: true
+fw_rules:
+  - type: "in"
+    action: "ACCEPT"
+    comment: "Allow SSH rpi router"
+    source: "192.168.1.101"
+    dport: "22"
+    proto: "tcp"
+    log: "info"
+    enabled: true 
+  - type: "in"
+    action: "ACCEPT"
+    comment: "Allow vault port"
+    source: "192.168.1.101,10.0.0.22,10.0.0.23"
+    dport: "8200"
+    proto: "tcp"
+    log: "info"
+    enabled: true  
+
+network_devices:
+  eth0:
+    bridge: "vnet01"
+    addresses: "10.0.0.112/24"
+    gateway4: "10.0.0.1"
+    firewall: true
+    dhcp: false
+    routes:
+      - to: "default"
+        via: "10.0.0.1"
+        metric: "1"
+users:
+  - name: "user"
+    password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
+    groups: "[adm, sudo]"
+    lock_passwd: "false"
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: "/bin/bash"
+    ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
+
+files:
+  - path: "/home/user/vault/config.hcl"
+    permissions: "0600"
+    content: |
+      storage "raft" {
+        path    = "/vault/data"
+        node_id = "vault1"
+      }
+      
+      listener "tcp" {
+        address     = "0.0.0.0:8200"
+        tls_disable = "true"
+      }
+      
+      api_addr      = "http://127.0.0.1:8200"
+      cluster_addr  = "http://127.0.0.1:8201"
+      ui            = true
+      disable_mlock = true
+
+  - path: "/home/user/vault/policy_terraform.hcl"
+    permissions: "0600"
+    content: |
+      # kv2 secret/terraform/*
+      path "secret/data/terraform/*" {
+         capabilities = [ "create", "read", "update", "delete", "list" ]
+      }
+      
+      path "secret/metadata/terraform/*" {
+         capabilities = [ "create", "read", "update", "delete", "list" ]
+      }
+      
+      # Mount the AppRole auth method
+      path "sys/auth/approle" {
+        capabilities = [ "create", "read", "update", "delete", "sudo" ]
+      }
+      
+      # Configure the AppRole auth method
+      path "sys/auth/approle/*" {
+        capabilities = [ "create", "read", "update", "delete" ]
+      }
+      
+      # Create and manage roles
+      path "auth/approle/*" {
+        capabilities = [ "create", "read", "update", "delete", "list" ]
+      }
+      
+      # Write ACL policies
+      path "sys/policies/acl/*" {
+        capabilities = [ "create", "read", "update", "delete", "list" ]
+      }
+
+  - path: "/home/user/docker-compose.yaml"
+    permissions: "0600"
+    content: |
+      services:
+        vault:
+          image: hashicorp/vault:$${VAULT_VERSION}
+          container_name: vault
+          ports:
+            - 8200:8200
+          volumes:
+            - ./vault/config.hcl:/vault/config/config.hcl
+            - ./vault/data:/vault/data
+          environment:
+            VAULT_ADDR: http://127.0.0.1:8200
+          entrypoint: vault server -config=/vault/config/config.hcl
+          cap_add:
+            - IPC_LOCK
+  
+  - path: "/home/user/.env"
+    permissions: "0600"
+    content: |
+      VAULT_VERSION=1.21
+
+cmds: [
+  "usermod -aG docker user",
+  "chown -R user:users /home/user",
+  "sudo -H -u user bash -c 'cd /home/user; docker compose up -d'"
+]
+
+cloudinit_templates:
+  user_data_path: "cloud-init/user_data_hostname"
+
+deploy: true

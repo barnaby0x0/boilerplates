@@ -1,14 +1,14 @@
 ---
 id: "testmachinealpine"
 vm_id: 700
-replicas: 0
+replicas: 1
 template_id: "1000"
 hostname: "testmachinealpine"
 domain: "net.local"
 cpu_type: "x86-64-v2-AES"
-cpu_cores: 1
+cpu_cores: 4
 cpu_sockets: 1
-memory: 512
+memory: 4096
 vm_user: "sysadmin"
 disks: {}
 vm_tags: ["test", "alpine", "terraform", "replicas"]
@@ -69,8 +69,9 @@ files:
       nameserver 8.8.4.4
     permissions: '0644'
     owner: root:root
+
 cmds: [
   "usermod -aG docker user",
-  "wget http://${http_server_url}/files/immich/init.sh"
+  "echo ${secret1}|base64 -d >> /tmp/test"
 ]
-deploy: true
+deploy: false
