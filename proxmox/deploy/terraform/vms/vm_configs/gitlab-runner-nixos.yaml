@@ -28,7 +28,7 @@ efi_disk:
   pre_enrolled_keys: false   
 vm_tags: ["runner", "gitlab", "nixos", "terraform", "automation"]
 template_tag: "router"
-started: true
+started: false
 onboot: false
 target_node: "pve"
 target_node_domain: ""
@@ -73,7 +73,7 @@ files:
     owner: "user:users"
     content: |
       CI_SERVER_URL=https://gitlab.com
-      CI_SERVER_TOKEN=glrt-5pmmPm_FnMG3-oXd_tLw82c6MTlmaDZ3Cm86MQp0OjIKdToyZ2lzZhg.01.1j1t6q2g4
+      CI_SERVER_TOKEN=${gitlab_nixos_token}
 
 cmds:
   - "echo Hello > /tmp/test"

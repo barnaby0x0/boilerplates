@@ -20,7 +20,7 @@ disks:
     discard: "ignore"
 vm_tags: ["runner", "dind", "gitlab", "ubuntu", "terraform", "automation"]
 template_tag: "router"
-started: true
+started: false
 onboot: false
 target_node: "pve"
 target_node_domain: ""
@@ -69,7 +69,7 @@ files:
         name = "ubuntu"
         url = "https://gitlab.com"
         id = 51778466
-        token = "glrt-VFMyGfu6Ah7wPaJ84NDp2mc6MTlmaDZ3Cm86MQp0OjIKdToyZ2lzZhg.01.1j1och5b2"
+        token = "${gitlab_ubuntu_token}"
         token_obtained_at = 2026-02-13T10:57:09Z
         token_expires_at = 0001-01-01T00:00:00Z
         executor = "docker"

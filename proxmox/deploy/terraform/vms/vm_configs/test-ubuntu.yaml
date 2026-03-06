@@ -1,7 +1,7 @@
 ---
 id: "testmachineubuntu"
 vm_id: 740
-replicas: 1
+replicas: 0
 template_id: "1010"
 hostname: "testmachineubuntu"
 domain: "net.local"
@@ -47,5 +47,5 @@ users:
 
 files: []
 cmds: []
-deploy: false
+deploy: true
 

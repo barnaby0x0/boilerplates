@@ -10,7 +10,19 @@ cpu_cores: 4
 cpu_sockets: 1
 memory: 4096
 vm_user: "sysadmin"
-disks: {}
+disks:
+ disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 45
+    iothread: true
+    discard: "ignore"
+# bios: "ovmf"
+# efi_disk:
+#   datastore_id: "local-lvm"
+#   file_format: "raw"
+#   type: "4m"
+#   pre_enrolled_keys: false      
 vm_tags: ["test", "alpine", "terraform", "replicas"]
 template_tag: "router"
 started: true
@@ -34,21 +46,12 @@ secgroups:
 #     enabled: false
 
 network_devices:
-  # eth0:
-  #   bridge: "vmbr0"
-  #   addresses: "192.168.1.197/24"
-  #   gateway4: "192.168.1.1"
-  #   firewall: true
-  #   routes:
-  #     - to: "default"
-  #       via: "192.168.1.1"
-  #       metric: "10"
   eth0:
     bridge: "vnet01"
-    addresses: "10.0.0.34/24"
+    addresses: "10.0.0.90/24"
     gateway4: "10.0.0.1"
     firewall: true
-    dhcp: true
+    dhcp: false
     # routes:
     #   - to: "default"
     #     via: "10.0.0.1"
@@ -60,7 +63,8 @@ users:
     lock_passwd: "false"
     sudo: "ALL=(ALL) NOPASSWD:ALL"
     shell: "/bin/bash"
-    ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
+    ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKptwbs9lkk56DbyH8WXpSESgqiRDPHRjgI/grUPi4Vm user@nixos"
+    #ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
 
 files:
   - path: /etc/resolv.conf
@@ -69,9 +73,20 @@ files:
       nameserver 8.8.4.4
     permissions: '0644'
     owner: root:root
+  - path: /home/user/cmd
+    content: |
+      #!/bin/sh
+      #ssh user@10.10.0.12 "docker run -t -v nix-store:/nix 10.0.0.250:5000/nixos-anywhere bash -ic \"colmena --help\""
+      #ssh user@10.10.0.12 "docker run -t -v nix-store:/nix 10.0.0.250:5000/nixos-anywhere bash -ic \"nix-shell -p iputils --run 'ping -c2 10.0.0.90'\""
+      ssh user@10.10.0.12 "docker run -e SSHPASS=toor -t -v nix-store:/nix 10.0.0.250:5000/nixos-anywhere bash -ic \"nix-shell -p nixos-anywhere --run 'nixos-anywhere --flake .#serveur --build-on local --env-password --option require-sigs false --debug user@10.0.0.90'\""
+    permissions: '0755'
+
 
 cmds: [
   "usermod -aG docker user",
-  "echo ${secret1}|base64 -d >> /tmp/test"
+  "echo ${secret1}|base64 -d >> /tmp/test",
+  "echo \"PerSourcePenalties no\" >> /etc/ssh/sshd_config",
+  "rc-service sshd restart",
+  "chown -R user:user /home/user"
 ]
-deploy: false
+deploy: true

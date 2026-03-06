@@ -19,6 +19,16 @@ variable "http_server_url" {
   default     = "192.168.1.31:8080"
 }
 
+variable "gitlab_runner_token_nixos" {
+  type    = string
+  default = ""
+}
+
+variable "gitlab_runner_token_ubuntu" {
+  type    = string
+  default = ""
+}
+
 variable "test" {
   type    = string
   default = <<-EOT
