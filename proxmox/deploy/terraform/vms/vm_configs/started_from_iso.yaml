@@ -62,4 +62,4 @@ users: []
 files: []
 cmds: []
 enable_cloud_init: true
-deploy: true
+deploy: false

@@ -1,7 +1,7 @@
 ---
 id: "test_service"
 vm_id: 1500
-replicas: 1
+replicas: 0
 template_id: "1100"
 hostname: "test-service"
 domain: "net.local"
@@ -51,4 +51,4 @@ cmds: [
 ]
 cloudinit_templates:
   user_data_path: "cloud-init/user_data_hostname"
-deploy: false
+deploy: true

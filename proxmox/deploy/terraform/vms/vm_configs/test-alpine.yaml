@@ -1,7 +1,7 @@
 ---
 id: "testmachinealpine"
 vm_id: 700
-replicas: 1
+replicas: 0
 template_id: "1000"
 hostname: "testmachinealpine"
 domain: "net.local"
@@ -46,6 +46,12 @@ secgroups:
 #     enabled: false
 
 network_devices:
+  # eth0:
+  #   bridge: "vmbr0"
+  #   addresses: "192.168.1.90/24"
+  #   gateway4: "192.168.1.1"
+  #   firewall: true
+  #   dhcp: false
   eth0:
     bridge: "vnet01"
     addresses: "10.0.0.90/24"
@@ -84,9 +90,10 @@ files:
 
 cmds: [
   "usermod -aG docker user",
-  "echo ${secret1}|base64 -d >> /tmp/test",
-  "echo \"PerSourcePenalties no\" >> /etc/ssh/sshd_config",
-  "rc-service sshd restart",
-  "chown -R user:user /home/user"
+  # "echo \"PerSourcePenalties no\" >> /etc/ssh/sshd_config",
+  # "rc-service sshd restart",
+  # "chown -R user:user /home/user"
 ]
+cloudinit_templates:
+  user_data_path: "cloud-init/user_data_hostname"
 deploy: true
