@@ -88,4 +88,8 @@ cmds: [
   "chown user:user /home/user/docker-compose.yaml",
   "su -l user -c \"cd /home/user && docker compose up -d\""
 ]
+
+cloudinit_templates:
+  user_data_path: "cloud-init/user_data_hostname"
+
 deploy: true

@@ -64,8 +64,8 @@ cmds: [
   "usermod -aG docker user",
   "mkdir -p /etc/docker",
   "mkdir /home/user/downloader",
-  "cd /home/user/downloader; wget http://192.168.1.31:8080/files/downloader/docker-compose.yaml",
-  "/home/user/downloader; wget http://192.168.1.31:8080/files/downloader/.env",
+  "cd /home/user/downloader; wget http://192.168.1.29:8080/files/downloader/docker-compose.yaml",
+  "/home/user/downloader; wget http://192.168.1.29:8080/files/downloader/.env",
   "mkdir -p /home/user/containers/downloader/transmission/downloads",
   "mkdir -p /home/user/.secret/vpn/wg_confs",
   "mkdir -p /home/user/containers/downloader/firefox/Downloads/new",
@@ -78,4 +78,8 @@ cmds: [
   "service docker restart"
   #"su -l user -c \"cd /home/user/downloader && docker compose up -d\""
 ]
+
+cloudinit_templates:
+  user_data_path: "cloud-init/user_data_hostname"
+
 deploy: true

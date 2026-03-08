@@ -69,4 +69,8 @@ cmds: [
   "su - user -c \"cd /home/user/nginx; tar xvzf data.tgz && tar xvzf letsencrypt.tgz && rm data.tgz letsencrypt.tgz\"",
   "su - user -c \"cd /home/user/nginx; docker-compose up -d\""
 ]
+
+cloudinit_templates:
+  user_data_path: "cloud-init/user_data_hostname"
+
 deploy: true
