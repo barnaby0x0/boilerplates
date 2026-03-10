@@ -11,15 +11,15 @@ cpu:
   cores: 1
 memory:
   dedicated: 512
-secgroups:
-  - security_group: "test700"
-    comment: "From security group"
-    iface: "net0"
+# secgroups:
+#   - security_group: "test700"
+#     comment: "From security group"
+#     iface: "net0"
 network_interfaces:
   eth0:
     name: "eth0"
     bridge: "vnet01"
-    firewall: true
+    firewall: false
 ipv4_configs:
   eth0:
     address: "10.0.0.201/24"
@@ -32,5 +32,46 @@ disks:
 
 unprivileged: true
 
+provision:
+  enable: true
+  connection:
+    interface: "eth0"
+  inline:
+    - |
+      sysctl -w net.ipv4.ip_forward=1
+      apt update && apt install wireguard-tools vim -y
+      cat << EOF > /etc/wireguard/wg0.conf
+      [Interface]
+      # ${vpn_publickey}
+      PrivateKey = ${vpn_privatekey}
+      Address = 172.16.0.7/32
+      #PostUp = ping -c1 172.16.0.1
+      PostUp = iptables -P FORWARD DROP
+      PostUp = iptables -A FORWARD -s 172.16.0.1 -d 192.168.1.100 -j ACCEPT
+      PostUp = iptables -A FORWARD -s 172.16.0.1 -d 192.168.1.114 -j ACCEPT
+      PostUp = iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+      PostUp = iptables -tnat -A POSTROUTING -o eth0 -j MASQUERADE
+      PostDown = iptables -P FORWARD ACCEPT
+      PostDown = iptables -D FORWARD -s 172.16.0.1 -d 192.168.1.100 -j ACCEPT
+      PostDown = iptables -D FORWARD -s 172.16.0.1 -d 192.168.1.114 -j ACCEPT
+      PostDown = iptables -D FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+      PostDown = iptables -tnat -D POSTROUTING -o eth0 -j MASQUERADE
+      
+      [Peer]
+      PublicKey = OcOa+0B13cYrrQvPcKbGx69bT47oH5ZDuT0cXHuYrzc=
+      Endpoint = ${vps_wg_public_ip}:${vps_wg_public_port}
+      AllowedIPs = 172.16.0.1/32
+      PersistentKeepalive = 25
+      EOF
+      systemctl enable --now wg-quick@wg0 
+      
+
+
 hook_script_file_id: ""
 deploy: true
+
+## STARTUP
+# copy the configuration file (b64) into /etc/wireguard/wg0.conf
+# W0ludGVyZmFjZV0KIyBkYWgrY3lkVkNKZXIzRUhxV3RCM2JOdmFQcU9OdEJnOVBUaTdEZHhkQ0dRPQpQcml2YXRlS2V5ID0gc0c0OEtzckNQeGZKT0dMU1NnUVNtUmF1RTJveGNPN0llVUJMMXpRU3BtMD0KQWRkcmVzcyA9IDE3Mi4xNi4wLjcvMzIKI1Bvc3RVcCA9IHBpbmcgLWMxIDE3Mi4xNi4wLjEKUG9zdFVwID0gaXB0YWJsZXMgLVAgRk9SV0FSRCBEUk9QIApQb3N0VXAgPSBpcHRhYmxlcyAtQSBGT1JXQVJEIC1zIDE3Mi4xNi4wLjEgLWQgMTkyLjE2OC4xLjEwMCAtaiBBQ0NFUFQgClBvc3RVcCA9IGlwdGFibGVzIC1BIEZPUldBUkQgLXMgMTcyLjE2LjAuMSAtZCAxOTIuMTY4LjEuMTE0IC1qIEFDQ0VQVCAKUG9zdFVwID0gaXB0YWJsZXMgLUEgRk9SV0FSRCAtbSBjb25udHJhY2sgLS1jdHN0YXRlIFJFTEFURUQsRVNUQUJMSVNIRUQgLWogQUNDRVBUClBvc3RVcCA9IGlwdGFibGVzIC10bmF0IC1BIFBPU1RST1VUSU5HIC1vIGV0aDAgLWogTUFTUVVFUkFERSAKUG9zdERvd24gPSBpcHRhYmxlcyAtUCBGT1JXQVJEIEFDQ0VQVCAKUG9zdERvd24gPSBpcHRhYmxlcyAtRCBGT1JXQVJEIC1zIDE3Mi4xNi4wLjEgLWQgMTkyLjE2OC4xLjEwMCAtaiBBQ0NFUFQgClBvc3REb3duID0gaXB0YWJsZXMgLUQgRk9SV0FSRCAtcyAxNzIuMTYuMC4xIC1kIDE5Mi4xNjguMS4xMTQgLWogQUNDRVBUIApQb3N0RG93biA9IGlwdGFibGVzIC1EIEZPUldBUkQgLW0gY29ubnRyYWNrIC0tY3RzdGF0ZSBSRUxBVEVELEVTVEFCTElTSEVEIC1qIEFDQ0VQVApQb3N0RG93biA9IGlwdGFibGVzIC10bmF0IC1EIFBPU1RST1VUSU5HIC1vIGV0aDAgLWogTUFTUVVFUkFERSAKCltQZWVyXQpQdWJsaWNLZXkgPSBPY09hKzBCMTNjWXJyUXZQY0tiR3g2OWJUNDdvSDVaRHVUMGNYSHVZcnpjPQpFbmRwb2ludCA9IDU3LjEzMS4zMi44Mzo1MTgyMApBbGxvd2VkSVBzID0gMTcyLjE2LjAuMS8zMgo=
+# wg-quick up wg0
+# ping -c1 172.16.0.1 # for testing

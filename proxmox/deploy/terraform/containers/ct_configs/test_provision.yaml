@@ -1,0 +1,62 @@
+---
+id: "vpn_router"
+replicas: 2
+vm_id: 2001
+target_node: "pve"
+description: "Container managed by terraform: provision testing"
+tags: ["provision", "automation", "terraform"]
+hostname: "vpn-router"
+firewall_enabled: false
+cpu:
+  cores: 1
+memory:
+  dedicated: 512
+# secgroups:
+#   - security_group: "test700"
+#     comment: "From security group"
+#     iface: "net0"
+network_interfaces:
+  eth0:
+    name: "eth0"
+    bridge: "vnet01"
+    firewall: false
+ipv4_configs:
+  eth0:
+    address: "10.0.0.226/24"
+    gateway: "10.0.0.1"
+
+disks:
+  disk0:
+    datastore_id: "local-lvm"
+    size: 4
+
+unprivileged: true
+
+provision:
+  enable: true
+  connection:
+    interface: "eth0"
+  inline:
+    - |
+      sysctl -w net.ipv4.ip_forward=1
+      apt update
+      apt install wireguard-tools vim -y
+      (cd /root; wg genkey | tee privatekey | wg pubkey > publickey)
+      cat << EOF > /root/wg0.conf.tpl
+      [interface]
+      Address = 10.0.13.0/24
+      ListenPort = 51820
+      PrivateKey = \$${WG_PRIVKEY}
+
+      [peer]
+      PublicKey = CHANGEME
+      Endpoint = CHANGEME
+      AllowedIps = 10.0.13.1/32
+      EOF
+      export WG_PRIVKEY=$(cat /root/privatekey); envsubst < /root/wg0.conf.tpl > /etc/wireguard/wg0.conf
+      # rm /root/wg0.conf.tpl
+      # systemctl enable --now wg-quick@wg0
+
+
+hook_script_file_id: ""
+deploy: true

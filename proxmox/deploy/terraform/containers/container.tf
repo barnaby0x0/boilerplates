@@ -33,6 +33,7 @@ resource "proxmox_virtual_environment_container" "ct" {
 
   initialization {
     hostname = each.value.hostname
+    # entrypoint = lookup(each.value, "entrypoint", "")
 
     ip_config {
       dynamic "ipv4" {
@@ -101,8 +102,8 @@ resource "proxmox_virtual_environment_firewall_rules" "inbound" {
     proxmox_virtual_environment_container.ct
   ]
 
-  node_name = each.value.target_node
-  container_id     = proxmox_virtual_environment_container.ct[each.key].id
+  node_name    = each.value.target_node
+  container_id = proxmox_virtual_environment_container.ct[each.key].id
 
   dynamic "rule" {
     for_each = try(each.value.fw_rules, null) == null ? [] : each.value.fw_rules
@@ -220,6 +221,31 @@ resource "tls_private_key" "ubuntu_container_key" {
   algorithm = "RSA"
   rsa_bits  = 2048
 }
+
+
+
+resource "null_resource" "provision_lxc" {
+  for_each = { for ct in local.configs : ct.id => ct if ct.deploy && try(ct.provision.enable, false) }
+
+  triggers = {
+    vmid = each.value.vm_id
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      type        = "ssh"
+      user        = "root"
+      private_key = tls_private_key.ubuntu_container_key.private_key_pem
+      host        = split("/", each.value.ipv4_configs[each.value.provision.connection.interface].address)[0]
+      timeout     = "5m"
+    }
+
+    # inline  = lookup(each.value.provision, "inline", [])
+
+    inline = each.value.provision.inline
+  }
+}
+
 
 output "ubuntu_container_password" {
   value     = random_password.ubuntu_container_password.result

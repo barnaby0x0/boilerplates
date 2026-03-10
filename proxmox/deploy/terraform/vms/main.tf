@@ -53,3 +53,37 @@ provider "proxmox" {
 # output "name" {
 #   value = var.test
 # }
+
+
+variable "target_host" {
+  description = "IP to test"
+  type        = string
+  default     = "10.0.0.112"
+}
+
+data "external" "server_reachable" {
+  program = ["bash", "-c", <<EOT
+    if nc -z -w 3 "${var.target_host}" 22 >/dev/null 2>&1; then
+      echo '{"reachable": "true", "message": "OK"}'
+    else
+      echo '{"reachable": "false", "message": "Serveur ${var.target_host} non joignable (port 22)"}'
+    fi
+  EOT
+  ]
+}
+
+check "server_must_be_up" {
+  assert {
+    condition     = data.external.server_reachable.result.reachable == "true"
+    error_message = data.external.server_reachable.result.message
+  }
+}
+
+resource "null_resource" "create_the_ressource" {
+  depends_on = [data.external.server_reachable]
+  count      = data.external.server_reachable.result.reachable == "true" ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "echo 'Nous pouvons créer le conteneur ${var.target_host}'"
+  }
+}

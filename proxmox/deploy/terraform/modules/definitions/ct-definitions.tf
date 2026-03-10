@@ -2,13 +2,14 @@ variable "ct_configs" {
   description = "List of Containers configurations"
   default     = []
   type = list(object({
-    id               = string
-    replicas         = optional(number)
-    vm_id            = number
-    description      = string
-    target_node      = string
-    tags             = list(string)
-    hostname         = string
+    id          = string
+    replicas    = optional(number)
+    vm_id       = number
+    description = string
+    target_node = string
+    tags        = list(string)
+    hostname    = string
+    # entrypoint       = optional(string)
     firewall_enabled = optional(bool, false)
     secgroups = optional(list(object({
       enabled        = optional(bool)
@@ -55,6 +56,7 @@ variable "ct_configs" {
     }))
 
     unprivileged = bool
+    # enable_provision = optional(bool, false)
     features = optional(object({
       nesting = bool
       }), {
@@ -81,6 +83,11 @@ variable "ct_configs" {
 
     deploy              = bool
     hook_script_file_id = optional(string)
+    provision = optional(object({
+      enable     = bool
+      connection = object({ interface = string })
+      inline     = optional(list(string))
+    }))
   }))
 }
 

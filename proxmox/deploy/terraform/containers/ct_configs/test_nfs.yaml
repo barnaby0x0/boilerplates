@@ -1,10 +1,11 @@
 ---
-id: "testnfs"
+id: "test"
 vm_id: 940
+replicas: 1
 target_node: "pve"
-description: "Container managed by terraform: python testing for yfinance"
+description: "Container managed by terraform"
 tags: ["test", "terraform"]
-hostname: "testnfs"
+hostname: "test"
 cpu:
   cores: 2
 memory:
@@ -12,15 +13,16 @@ memory:
 network_interfaces:
   eth0:
     name: "eth0"
-    bridge: "vmbr0"
+    bridge: "vnet01"
 ipv4_configs:
   eth0:
-    address: "192.168.1.244/24"
-    gateway: "192.168.1.1"
+    address: "10.0.0.244/24"
+    gateway: "10.0.0.1"
 
 disks:
   disk0:
-    datastore_id: "rpi"
+    #datastore_id: "rpi"
+    datastore_id: "local-lvm"
     size: 10
 
 startup:
@@ -30,4 +32,5 @@ startup:
 unprivileged: true
 
 hook_script_file_id: ""
+enable_provision: true
 deploy: false

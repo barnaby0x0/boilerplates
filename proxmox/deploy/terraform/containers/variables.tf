@@ -231,3 +231,28 @@ variable "template_tag" {
 #   default = [
 #     {
 #       internal = 8300
+
+
+variable "vpn_private_key" {
+  type      = string
+  default   = ""
+  # sensitive = true
+}
+
+variable "vpn_public_key" {
+  type      = string
+  default   = ""
+  # sensitive = true
+}
+
+variable "vps_wg_public_ip" {
+  type      = string
+  default   = ""
+  # sensitive = true
+}
+
+variable "vps_wg_public_port" {
+  type      = string
+  default   = ""
+  # sensitive = true
+}

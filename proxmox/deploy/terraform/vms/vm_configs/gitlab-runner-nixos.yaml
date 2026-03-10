@@ -34,25 +34,25 @@ target_node: "pve"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]
 firewall_enabled: false
-secgroups:
-  - security_group: "gitlab-runners"
-    comment: "From security group"
-    iface: "net0"
-fw_rules:
-  - type: "in"
-    action: "ACCEPT"
-    comment: "Allow SSH From nixos installer"
-    source: "10.0.0.12"
-    dport: "22"
-    proto: "tcp"
-    log: "info"
-    enabled: true    
+# secgroups:
+#   - security_group: "gitlab-runners"
+#     comment: "From security group"
+#     iface: "net0"
+# fw_rules:
+#   - type: "in"
+#     action: "ACCEPT"
+#     comment: "Allow SSH From nixos installer"
+#     source: "10.0.0.12"
+#     dport: "22"
+#     proto: "tcp"
+#     log: "info"
+#     enabled: true    
 network_devices:
   ens18:
     bridge: "vnet01"
     addresses: "10.0.0.23/24"
     gateway4: "10.0.0.1"
-    firewall: true
+    firewall: false
     routes:
       - to: "0.0.0.0/0"
         via: "10.0.0.1"
