@@ -51,4 +51,4 @@ cmds: [
 ]
 cloudinit_templates:
   user_data_path: "cloud-init/user_data_hostname"
-deploy: true
+deploy: false

@@ -1,7 +1,7 @@
 ---
 id: "testmachinealpine"
 vm_id: 700
-replicas: 1
+replicas: 2
 template_id: "1000"
 hostname: "testmachinealpine"
 domain: "net.local"
@@ -96,4 +96,4 @@ cmds: [
 ]
 cloudinit_templates:
   user_data_path: "cloud-init/user_data_hostname"
-deploy: true
+deploy: false

@@ -18,8 +18,8 @@ disks:
     discard: "ignore"
 vm_tags: ["downloader", "docker", "terraform"]
 template_tag: "registry"
-started: true
-onboot: true
+started: false
+onboot: false
 target_node: "pve"
 target_node_domain: ""
 dns_servers: ["8.8.8.8", "8.8.4.4"]

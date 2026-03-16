@@ -20,7 +20,7 @@ disks:
     discard: "ignore"
 vm_tags: ["runner", "dind", "gitlab", "ubuntu", "terraform", "automation"]
 template_tag: "router"
-started: false
+started: true
 onboot: false
 target_node: "pve"
 target_node_domain: ""
@@ -35,7 +35,7 @@ network_devices:
     bridge: "vnet01"
     addresses: "10.0.0.22/24"
     gateway4: "10.0.0.1"
-    firewall: true
+    firewall: false
     routes:
       - to: "default"
         via: "10.0.0.1"
@@ -92,18 +92,6 @@ files:
           network_mtu = 0         
 
 cmds:
-  # - "apt-get install unzip"
-  # - "curl -fsSL https://releases.hashicorp.com/vault/1.21.3/vault_1.21.3_linux_amd64.zip -o vault.zip"
-  # - "unzip -o vault.zip vault"
-  # - "sudo mv vault /usr/bin/vault"
-  # - "sudo chmod +x /usr/bin/vault"
-  # - "rm vault.zip"
-  # - "vault --version"
-  # - "wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg"
-  # - "echo  \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main\" | sudo tee /etc/apt/sources.list.d/hashicorp.list"
-  # - "sudo apt update && sudo apt install packer"
-  # - "ln -sf /usr/bin/packer /usr/local/bin/packer"
-  # - "ln -sf /bin/jq /usr/local/bin/jq"
   - "mkdir -p /etc/gitlab-runner"
   - "curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh | sudo bash"
   - "apt-get install gitlab-runner jq -y"  
