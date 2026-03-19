@@ -1,22 +1,22 @@
 ---
 id: "nodocker"
 vm_id: 780
-replicas: 2
-template_id: "1100"
+replicas: 1
+template_id: "1200"
 hostname: "nodocker"
 domain: "net.local"
 cpu_type: "x86-64-v2-AES"
-cpu_cores: 1
+cpu_cores: 4
 cpu_sockets: 1
-memory: 512
+memory: 4096
 vm_user: "sysadmin"
 disks:
- disk0:
+  disk0:
     interface: "virtio0"
     storage: "local-lvm"
     size: 5
     iothread: true
-    discard: "ignore"   
+    discard: "ignore"
 vm_tags: ["test", "alpine", "terraform", "replicas", "nodocker"]
 template_tag: "router"
 started: true
@@ -28,29 +28,238 @@ firewall_enabled: false
 network_devices:
   eth0:
     bridge: "vnet01"
-    addresses: "10.0.0.140/24"
-    gateway4: "10.0.0.1"
+    addresses: "10.0.1.1/24"
+    gateway4: "10.0.1.254"
     firewall: false
-    dhcp: false         
+    dhcp: false
 users:
   - name: "user"
+    # yamllint disable-line rule:line-length
     password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
     groups: "[adm, sudo]"
     lock_passwd: "false"
     sudo: "ALL=(ALL) NOPASSWD:ALL"
     shell: "/bin/bash"
-    ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKptwbs9lkk56DbyH8WXpSESgqiRDPHRjgI/grUPi4Vm user@nixos"
-    #ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull"
+    # yamllint disable-line rule:line-length
+    ssh_authorized_keys: "\n      - sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIMBf4Q56GIITQXPAwCUGICe15WYd41qQprjM75C8wG0EAAAACHNzaDptYWlu Main Key"
 
-files: []
-  # - path: /etc/resolv.conf
+files:
+  # - path: /etc/tor/torrc
   #   content: |
-  #     nameserver 8.8.8.8
-  #     nameserver 8.8.4.4
+  #     #SOCKSPort 9050 # Default: Bind to localhost:9050 for local connections.
+  #     #SOCKSPort 192.168.0.1:9100 # Bind to this address:port too.
+
+  #     #SOCKSPolicy accept 192.168.0.0/16
+  #     #SOCKSPolicy accept6 FC00::/7
+  #     #SOCKSPolicy reject *
+  #     Log notice file /var/log/tor/notices.log
+  #     DataDirectory /var/lib/tor
+  #     DNSPort 5353
+  #     DNSListenAddress 127.0.0.1
+
+  #     #%include /etc/torrc.d/*.conf
   #   permissions: '0644'
   #   owner: root:root
 
-cmds: []
+  - path: /root/tor-router-pre.sh
+    content: |
+      #!/bin/bash
+      _tor_uid=$(id -u tor)
+      _trans=9050 _dns=5353
+      _nontor="192.168.1.0/24 192.168.0.0/24 10.0.0.0/24"
+      
+      # !!! sysctl -w net.ipv4.conf.all.route_localnet=1
+      # Sur les kernels Linux modernes (depuis ~2.6.37, et surtout 3.x+),
+      # le noyau rejette par défaut les paquets qui arrivent de l'extérieur mais qui ont dst=127.0.0.0/8 
+      # (considérés comme "martian" ou invalides pour du trafic externe). C'est une mesure de sécurité.
+      sysctl -w net.ipv4.conf.all.route_localnet=1
+
+      # Activate the forwarding
+      sysctl -w net.ipv4.ip_forward=1
+      
+      # Flush
+      iptables -t nat -F
+      iptables -F
+      iptables -t nat -X
+      iptables -X
+
+      iptables -t nat -N TOR
+      iptables -t nat -N CUSTOM
+      
+      # Still useful ? 
+      #iptables -t nat -A OUTPUT -m owner --uid-owner $_tor_uid -j RETURN
+
+      iptables -t nat -A PREROUTING -p tcp --dport 22 -j RETURN
+      iptables -t nat -A PREROUTING -j TOR
+      # DNS MANAGEMENT
+      iptables -t nat -A TOR -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:5353
+      
+      for NET in $_nontor 127.0.0.0/9 127.128.0.0/10; do
+          iptables -t nat -A TOR -d $NET -j RETURN
+      done
+      
+      # PREROUTING pour gérer le forward en moide router
+      iptables -t nat -A TOR -p tcp -j REDIRECT --to-ports 2080
+      iptables -t nat -A TOR -p udp -j REDIRECT --to-ports 2080
+      iptables -t nat -A TOR  -p icmp -j REDIRECT --to-ports 2080
+      #iptables -t nat -A TOR -p tcp -m multiport --dports 80,443 -j REDIRECT --to-ports 2080
+      #iptables -t nat -A TOR -p tcp -j DNAT --to-destination 127.0.0.1:9050
+      
+      iptables -tnat -A POSTROUTING -j CUSTOM
+      iptables -tnat -A CUSTOM -o eth0 -d 10.0.0.0/8 -j ACCEPT
+      iptables -tnat -A CUSTOM -o eth0 -d 192.168.1.0/24 -j ACCEPT
+      iptables -tnat -A CUSTOM -o eth0 -j MASQUERADE
+    permissions: '0755'
+    owner: root:root  
+
+  - path: /root/tor-router.sh
+    content: |
+      #!/bin/bash
+      _tor_uid=$(id -u tor)
+      _trans=9050 _dns=5353
+      _nontor="192.168.1.0/24 192.168.0.0/24 10.0.0.0/24"
+
+      # Flush
+      iptables -t nat -F; iptables -F OUTPUT
+
+      #iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+      iptables -t nat -A OUTPUT -m owner --uid-owner $_tor_uid -j RETURN
+      iptables -t nat -A OUTPUT -p udp --dport 53 -j REDIRECT --to-ports 5353
+
+      for NET in $_nontor 127.0.0.0/9 127.128.0.0/10; do
+          iptables -t nat -A OUTPUT -d $NET -j RETURN
+      done
+
+      ## FOR ROUTER MODE
+      iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5353
+      #iptables -t nat -A PREROUTING -p tcp -j DNAT --to-destination 127.0.0.1:9050
+      iptables -t nat -A PREROUTING -p tcp -m multiport --dports 80,443 -j REDIRECT --to-ports 2080
+
+      iptables -t nat -A OUTPUT -p tcp -m multiport --dports 80,443 -j REDIRECT --to-ports 2080
+      iptables -t nat -A OUTPUT -p tcp -j DNAT --to-destination 127.0.0.1:9050
+      # iptables -t nat -A OUTPUT -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT
+      iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+    permissions: '0755'
+    owner: root:root
+
+  # - path: /etc/nftables.nft
+  #   content: |
+  #     #!/usr/sbin/nft -f
+  #     # vim: set ts=4 sw=4:
+  #     # You can find examples in /usr/share/nftables/.
+
+  #     # Clear all prior state
+  #     flush ruleset
+
+  #     # Basic IPv4/IPv6 stateful firewall for server/workstation.
+  #     table inet filter {
+
+  #         set ssh_denylist {
+  #             type ipv4_addr
+  #             flags dynamic, timeout
+  #             timeout 1m
+  #         }
+
+  #     	chain input {
+  #     		type filter hook input priority 0; policy drop;
+
+  #     		iifname lo accept \
+  #     		comment "Accept any localhost traffic"
+
+  #             ip saddr @ssh_denylist counter drop
+
+  #     		ct state { established, related } accept \
+  #     		comment "Accept traffic originated from us"
+
+  #     		ct state invalid drop \
+  #     		comment "Drop invalid connections"
+
+  #     		tcp dport 113 reject with icmpx type port-unreachable \
+  #     		comment "Reject AUTH to make it fail fast"
+
+
+  #     		# ICMPv4
+
+  #     		ip protocol icmp icmp type {
+  #     			echo-reply,  # type 0
+  #     			destination-unreachable,  # type 3
+  #     			echo-request,  # type 8
+  #     			time-exceeded,  # type 11
+  #     			parameter-problem,  # type 12
+  #     		} accept \
+  #     		comment "Accept ICMP"
+
+  #     		# ICMPv6
+
+  #     		icmpv6 type {
+  #     			destination-unreachable,  # type 1
+  #     			packet-too-big,  # type 2
+  #     			time-exceeded,  # type 3
+  #     			parameter-problem,  # type 4
+  #     			echo-request,  # type 128
+  #     			echo-reply,  # type 129
+  #     		} accept \
+  #     		comment "Accept basic IPv6 functionality"
+
+  #     		icmpv6 type {
+  #     			nd-router-solicit,  # type 133
+  #     			nd-router-advert,  # type 134
+  #     			nd-neighbor-solicit,  # type 135
+  #     			nd-neighbor-advert,  # type 136
+  #     		} ip6 hoplimit 255 accept \
+  #     		comment "Allow IPv6 SLAAC"
+
+  #     		icmpv6 type {
+  #     			mld-listener-query,  # type 130
+  #     			mld-listener-report,  # type 131
+  #     			mld-listener-reduction,  # type 132
+  #     			mld2-listener-report,  # type 143
+  #     		} ip6 saddr fe80::/10 accept \
+  #     		comment "Allow IPv6 multicast listener discovery on link-local"
+
+  #     		ip6 saddr fe80::/10 udp sport 547 udp dport 546 accept \
+  #     		comment "Accept DHCPv6 replies from IPv6 link-local addresses"
+  #             #tcp dport 22 meter ssh_limit { ip saddr limit rate over 1/second burst 1 packets } counter log prefix "DROP_RATE_LIMIT: "  drop
+  #             tcp dport 22 meter ssh_limit { ip saddr limit rate over 5/minute burst 5 packets } add @ssh_denylist { ip saddr timeout 1m } counter log prefix "DROP_RATE_LIMIT: " drop
+  #             tcp dport 22 iif eth0 ip saddr {192.168.1.101,10.0.0.141/32} log prefix "SSH: " counter accept
+
+  #     	}
+
+  #     	chain forward {
+  #     		type filter hook forward priority 0; policy drop;
+  #     	}
+
+  #     	chain output {
+  #     		type filter hook output priority 0; policy accept;
+  #     	}
+  #     }
+
+  #     # The state of stateful objects saved on the nftables service stop.
+  #     include "/var/lib/nftables/*.nft"
+
+  #     # Rules
+  #     include "/etc/nftables.d/*.nft"
+  #   permissions: '0644'
+  #   owner: root:root
+
+  - path: /root/cmds
+    content: |
+      moproxy --port 2080 --socks5 9050
+      moproxy --port 2080 --socks5 9050 --http 3128
+    permissions: '0600'
+    owner: root:root
+
+cmds: [
+  # "apk add nftables iproute2-ss tor curl vim xz file libc6-compat gcompat libgcc libstdc++ git cargo",
+	# "rc-service tor start",
+  # "rc-service nftables start",
+  # "rc-update add tor default",
+	# "rc-update add nftables default",
+	# "curl https://sh.rustup.rs -sSf | sh -s -- -y",
+	# "git clone https://github.com/sorz/moproxy",
+	# "(cd moproxy; cargo build --release && target/release/moproxy --help && cp target/release/moproxy /usr/bin/moproxy)"
+]
 cloudinit_templates:
   user_data_path: "cloud-init/user_data_hostname"
 deploy: true

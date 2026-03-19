@@ -1,0 +1,75 @@
+---
+id: "nodocker2"
+vm_id: 785
+replicas: 1
+template_id: "1200"
+hostname: "nodocker2"
+domain: "net.local"
+cpu_type: "x86-64-v2-AES"
+cpu_cores: 4
+cpu_sockets: 1
+memory: 4096
+vm_user: "sysadmin"
+disks:
+  disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 5
+    iothread: true
+    discard: "ignore"
+vm_tags: ["test", "alpine", "terraform", "replicas", "nodocker2"]
+template_tag: "router"
+started: true
+onboot: true
+target_node: "pve"
+target_node_domain: ""
+dns_servers: ["1.1.1.1"]
+firewall_enabled: false
+network_devices:
+  eth0:
+    bridge: "vnet01"
+    addresses: "10.0.1.10/24"
+    gateway4: "10.0.1.1"
+    firewall: false
+    dhcp: false
+users:
+  - name: "user"
+    password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
+    groups: "[adm, sudo]"
+    lock_passwd: "false"
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: "/bin/bash"
+    ssh_authorized_keys: "\n      - sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIMBf4Q56GIITQXPAwCUGICe15WYd41qQprjM75C8wG0EAAAACHNzaDptYWlu Main Key"
+
+files:
+  - path: /root/tor-router.sh
+    content: |
+      #!/bin/bash
+      _tor_uid=$(id -u tor)
+      _trans=9050 _dns=5353
+      _nontor="192.168.1.0/24 192.168.0.0/24 10.0.0.0/24"
+
+      # Flush
+      iptables -t nat -F; iptables -F OUTPUT
+
+      #iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+      iptables -t nat -A OUTPUT -m owner --uid-owner $_tor_uid -j RETURN
+      iptables -t nat -A OUTPUT -p udp --dport 53 -j REDIRECT --to-ports 5353
+
+      for NET in $_nontor 127.0.0.0/9 127.128.0.0/10; do
+          iptables -t nat -A OUTPUT -d $NET -j RETURN
+      done
+
+      #iptables -t nat -A OUTPUT -p tcp -m multiport --dports 80,443 -j DNAT --to-destination 127.0.0.1:8118
+      iptables -t nat -A OUTPUT -p tcp -m multiport --dports 80,443 -j REDIRECT --to-ports 2080
+      iptables -t nat -A OUTPUT -p tcp -j DNAT --to-destination 127.0.0.1:9050
+      # iptables -t nat -A OUTPUT -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT
+      iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+    permissions: '0755'
+    owner: root:root
+
+cmds: []
+cloudinit_templates:
+  user_data_path: "cloud-init/user_data_hostname"
+deploy: true
