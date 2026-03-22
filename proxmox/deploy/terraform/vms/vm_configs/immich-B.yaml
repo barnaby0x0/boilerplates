@@ -1,9 +1,8 @@
 ---
-id: "immichalpine"
+id: "immichB"
 vm_id: 410
-# replicas: 2
 template_id: "1000"
-hostname: "immichalpine"
+hostname: "immichB"
 domain: "net.local"
 cpu_type: "x86-64-v2-AES"
 cpu_cores: 4
@@ -14,7 +13,7 @@ disks:
  disk0:
     interface: "virtio0"
     storage: "local-lvm"
-    size: 10
+    size: 20
     iothread: true
     discard: "ignore"
  disk1:
@@ -23,7 +22,7 @@ disks:
     size: 100
     iothread: true
     discard: "ignore"
-vm_tags: ["immich", "current", "terraform"]
+vm_tags: ["immich", "B", "terraform"]
 template_tag: "router"
 started: true
 onboot: true
@@ -34,19 +33,7 @@ network_devices:
   eth0:
     bridge: "vmbr0"
     addresses: "192.168.1.219/24"
-    gateway4: "192.168.1.1"
-    routes:
-      - to: "default"
-        via: "192.168.1.1"
-        metric: "10"    
-#  eth1:
-#    bridge: "vnet01"
-#    addresses: "10.0.0.119/24"
-#    gateway4: "10.0.0.1"
-#    routes:
-#      - to: "default"
-#        via: "10.0.0.1"
-#        metric: "10"           
+    gateway4: "192.168.1.1"       
 users:
   - name: "user"
     password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
@@ -58,7 +45,6 @@ users:
 
 files: []
 cmds:
-  # - "usermod -aG docker user"
   - "wget http://192.168.1.29:8080/files/immich/init.sh && chmod +x $PWD/init.sh"
   - "wget http://192.168.1.29:8080/files/immich/immich.tgz"
   - "tar xzf $PWD/immich.tgz && rm $PWD/immich.tgz"
@@ -69,4 +55,4 @@ cmds:
 cloudinit_templates:
   user_data_path: "cloud-init/user_data_hostname"
 
-deploy: true
+deploy: false
