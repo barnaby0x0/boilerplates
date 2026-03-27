@@ -251,6 +251,8 @@ files:
     owner: root:root
 
 cmds: [
+  "nft add rule inet filter input tcp dport 2080 counter accept"
+  ## added on packer 1200
   # "apk add nftables iproute2-ss tor curl vim xz file libc6-compat gcompat libgcc libstdc++ git cargo",
 	# "rc-service tor start",
   # "rc-service nftables start",
