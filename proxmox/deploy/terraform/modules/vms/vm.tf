@@ -66,7 +66,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
     ]
   }
 
-  # boot_order    = ["scsi0"]
   scsi_hardware = "virtio-scsi-single"
 
   dynamic "disk" {

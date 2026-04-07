@@ -8,7 +8,7 @@ network:
       dhcp4: yes
 %{ else ~}
       addresses: ["${nic_config.addresses}"]
-      # gateway4: ${nic_config.gateway4}
+      gateway4: ${nic_config.gateway4}
 %{ endif ~}      
       nameservers:
         addresses: ${dns_servers}

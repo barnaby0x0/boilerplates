@@ -13,5 +13,5 @@ module "vms" {
   proxmox_url    = var.proxmox_url
   api_token      = var.api_token
   vm_definitions = local.vm_configs
-  target_node    = "k8"
+  # target_node    = "k8"
 }
