@@ -1,3 +1,0 @@
-export TF_VAR_proxmox_url="https://192.168.1.100:8006/api2/json"
-export TF_VAR_api_token="terraform@pve!automation=ccbf32e0-02bd-423e-9030-989e2a47050b"
-alias lload='while IFS=':' read -r e k v; do eval "export $e=\"\$(vault kv get -field=$k $v)\""; done < .env'
