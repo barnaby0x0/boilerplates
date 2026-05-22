@@ -1,0 +1,115 @@
+---
+id: "caddy"
+vm_id: 199
+replicas: 1
+template_id: "1000"
+hostname: "caddy"
+domain: "net.local"
+cpu_type: "x86-64-v2-AES"
+cpu_cores: 2
+cpu_sockets: 1
+memory: 2048
+vm_user: "sysadmin"
+disks:
+ disk0:
+    interface: "virtio0"
+    storage: "local-lvm"
+    size: 20
+    iothread: true
+    discard: "ignore"
+vm_tags: ["carddav", "caddy", "terraform"]
+template_tag: "router"
+started: true
+onboot: true
+target_node: "pve"
+target_node_domain: ""
+dns_servers: ["8.8.8.8", "8.8.4.4"]
+firewall_enabled: false
+secgroups:
+  - security_group: "test700"
+    comment: "From security group"
+    iface: "net0"
+# fw_rules:
+#   - type: "in"
+#     action: "ACCEPT"
+#     comment: "Allow HTTP"
+#     dest: "192.168.1.5"
+#     dport: "80"
+#     proto: "tcp"
+#     log: "info"
+#     enabled: false
+
+network_devices:
+  eth0:
+    bridge: "vmbr0"
+    addresses: "192.168.1.116/24"
+    gateway4: "192.168.1.1"
+    routes: []
+    
+  eth1:
+    bridge: "vnet01"
+    addresses: "10.0.0.116/24"
+    gateway4: "10.0.0.1"
+        
+users:
+  - name: "user"
+    password: "$6$tGz.h5alKsD5IOP2$yfQ1RTnXjdLnmCQxFG70Jf3d24YAb8Bsb/qZ/iW0aokkahPQ8qlRhgC2ZpVYkcK.CQh579k3IF3f2LTDAMsKH/"
+    groups: "[adm, sudo]"
+    lock_passwd: "false"
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: "/bin/bash"
+    ssh_authorized_keys: "\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1oFq0GYt8j7vg2nNAJNzwBtqrdOUDp8CMQwLRiz4Vz user@ull\n      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKptwbs9lkk56DbyH8WXpSESgqiRDPHRjgI/grUPi4Vm user@nixos"
+
+files:
+  - path: /home/user/docker-compose.yml
+    content: |
+      services:
+        caddy-proxy:
+          image: caddy:2
+          container_name: caddy-proxy
+          restart: unless-stopped
+          depends_on:
+            - caddy-ca
+          volumes:
+            - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+            - caddy_proxy_data:/data
+            - caddy_proxy_config:/config
+            # - ./shared:/shared:ro
+            - caddy_acme_data:/certs
+          ports:
+            - "80:80"
+            - "443:443"
+            - "443:443/udp"
+          networks:
+            internal:
+              aliases:
+                - app.lan   # <--- permet au serveur ACME de résoudre app.lan vers ce conteneur
+                - nginx.lan
+            web:
+      
+      networks:
+        internal:
+          driver: bridge
+        web:
+          driver: bridge
+      
+      volumes:
+        caddy_proxy_data:
+        caddy_proxy_config:
+
+
+
+    permissions: '0644'
+    owner: root:root
+
+cmds: [
+  "usermod -aG docker user",
+  "mkdir -p /home/user/data",
+  "mkdir -p /home/user/config",
+  "chown -R user:user /home/user/data",
+  "chown -R user:user /home/user/config",
+]
+
+cloudinit_templates:
+  user_data_path: "cloud-init/user_data_hostname"
+deploy: true
