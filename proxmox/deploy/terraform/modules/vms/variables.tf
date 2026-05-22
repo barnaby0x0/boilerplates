@@ -15,11 +15,11 @@ variable "api_token" {
   type = string
 }
 
-variable "target_node" {
-  description = "Proxmox node"
-  type        = string
-  default     = "pve"
-}
+# variable "target_node" {
+#   description = "Proxmox node"
+#   type        = string
+#   default     = "pve"
+# }
 
 # variable "vm_configs_dir" {
 #   description = "Vm Configuration directory"

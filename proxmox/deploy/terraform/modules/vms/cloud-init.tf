@@ -2,7 +2,8 @@ resource "proxmox_virtual_environment_file" "cloud_user_config" {
   for_each     = { for vm in local.configs : vm.id => vm if vm.deploy && vm.enable_cloud_init }
   content_type = "snippets"
   datastore_id = "snippets"
-  node_name    = var.target_node
+  # node_name    = var.target_node
+  node_name = each.value.target_node
 
   source_raw {
     data = templatefile("${path.module}/${each.value.cloudinit_templates.user_data_path}", {
@@ -20,7 +21,8 @@ resource "proxmox_virtual_environment_file" "cloud_network_config" {
 
   content_type = "snippets"
   datastore_id = "snippets"
-  node_name    = var.target_node
+  # node_name    = var.target_node
+  node_name = each.value.target_node
 
   source_raw {
     data = templatefile("${path.module}/${each.value.cloudinit_templates.network_path}", {
@@ -36,7 +38,8 @@ resource "proxmox_virtual_environment_file" "cloud_meta_config" {
   for_each     = { for vm in local.configs : vm.id => vm if vm.deploy && vm.enable_cloud_init }
   content_type = "snippets"
   datastore_id = "snippets"
-  node_name    = var.target_node
+  # node_name    = var.target_node
+  node_name = each.value.target_node
 
   source_raw {
     data = templatefile("${path.module}/${each.value.cloudinit_templates.meta_data}", {
